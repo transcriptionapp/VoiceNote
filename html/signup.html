@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | VoiceNote</title>
+
+    <!-- Fonts + Tailwind -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Manrope:wght@400;500;700;800&family=Noto+Sans:wght@400;500;700;900"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <style>
+      body {
+        font-family: Manrope, "Noto Sans", sans-serif;
+      }
+
+      .loader {
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 0.6s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-[#0e141b] min-h-screen flex flex-col overflow-x-hidden">
+    <div class="w-full max-w-[480px] mx-auto flex flex-col flex-1 px-4 pb-6 pt-4">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-2">
+        <button id="backBtn" class="p-2 text-[#0e141b] hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+            <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z" />
+          </svg>
+        </button>
+        <h2 class="text-lg font-bold tracking-[-0.015em] text-center flex-1 pr-10">VoiceNote</h2>
+      </div>
+
+      <!-- Intro -->
+      <h1 id="authHeading" class="text-[22px] font-bold leading-tight tracking-[-0.015em] pt-5 transition-opacity duration-300">
+        Welcome back
+      </h1>
+      <p class="text-base font-normal pt-1 pb-3">Please sign in to continue</p>
+
+<!-- Google (OAuth) -->
+<div class="flex justify-center pb-3">
+    <button
+      id="googleBtn"
+      class="w-full h-10 rounded-full bg-[#e7edf3] text-[#0e141b] text-sm font-bold flex items-center justify-center gap-2"
+    >
+      <svg
+        class="w-5 h-5"
+        viewBox="0 0 533.5 544.3"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M533.5 278.4c0-17.3-1.5-34-4.4-50.1H272v95h146.7c-6.4 34.6-25.4 63.9-54 83.6l87.2 67.5c50.9-46.9 81.6-116 81.6-195z"
+          fill="#4285f4"
+        />
+        <path
+          d="M272 544.3c73.7 0 135.6-24.5 180.8-66.5l-87.2-67.5c-24.2 16.3-55.1 25.9-93.6 25.9-71.9 0-132.8-48.5-154.6-113.6l-90.6 69.9c43.5 85.7 133.6 151.8 245.2 151.8z"
+          fill="#34a853"
+        />
+        <path
+          d="M117.4 322.6c-10.6-31.3-10.6-65.2 0-96.5l-90.6-69.9c-39.7 77.9-39.7 168.3 0 246.2l90.6-69.8z"
+          fill="#fbbc04"
+        />
+        <path
+          d="M272 107.7c39.8-.6 77.8 14.6 106.9 42.8l80.1-80.1C410.2 24.2 342.9-.6 272 0 160.4 0 70.3 66 26.8 151.8l90.6 69.9C139.2 156.3 200.1 107.7 272 107.7z"
+          fill="#ea4335"
+        />
+      </svg>
+      <span>Continue with Google</span>
+    </button>
+  </div>
+
+      <!-- Email -->
+      <div class="flex flex-col gap-2 pb-3">
+        <label class="text-base font-medium">Email address</label>
+        <input
+          id="email"
+          type="email"
+          placeholder="Email address"
+          class="form-input bg-[#e7edf3] rounded-xl h-14 p-4 text-base text-[#0e141b] placeholder:text-[#4e7397] focus:outline-none border-none"
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="flex flex-col gap-2 pb-4">
+        <label class="text-base font-medium">Password</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          class="form-input bg-[#e7edf3] rounded-xl h-14 p-4 text-base text-[#0e141b] placeholder:text-[#4e7397] focus:outline-none border-none"
+        />
+      </div>
+
+      <!-- Auth Button -->
+      <div class="pb-3">
+        <button
+          id="authBtn"
+          class="w-full h-12 rounded-full bg-[#1980e6] text-white text-base font-bold transition-opacity duration-300"
+        >
+          Sign In
+        </button>
+      </div>
+
+      <!-- Toggle Prompt (whole line is clickable) -->
+      <p
+        id="togglePrompt"
+        class="text-sm text-center text-[#4e7397] underline cursor-pointer select-none transition-opacity duration-300"
+      ></p>
+
+      <!-- Toast Placeholder -->
+      <div id="toast" class="hidden"></div>
+    </div>
+
+    <script type="module" src="../js/signup.js"></script>
+  </body>
+</html>

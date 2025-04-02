@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio Recorder | Record and Transcribe</title>
+
+    <!-- Fonts and Tailwind -->
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Manrope:wght@400;500;700;800&family=Noto+Sans:wght@400;500;700;900"
+    />
+    <link rel="stylesheet" href="/public/output.css" />
+
+    <style>
+      body {
+        font-family: Manrope, "Noto Sans", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-[#0e141b] min-h-screen flex flex-col overflow-x-hidden">
+    <div class="w-full max-w-[480px] mx-auto flex flex-col flex-1 px-4 pb-6 pt-4">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-2">
+        <div class="size-8 rounded-full bg-cover bg-center bg-no-repeat" style="background-image: url('https://cdn.usegalileo.ai/sdxl10/bbe14333-12fd-4d25-a0c2-18ad8d86d75e.png')"></div>
+        <h2 class="text-lg font-bold tracking-[-0.015em] flex-1 text-center">Transcribe</h2>
+        <button class="text-[#0e141b] p-2" title="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+            <path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Record Button -->
+      <div class="py-3">
+        <button id="recordToggle" class="flex items-center justify-center w-full h-12 bg-[#1980e6] text-white rounded-full font-bold text-base gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+            <path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176Z" />
+          </svg>
+          <span>Start Recording</span>
+        </button>
+      </div>
+
+      <!-- Status -->
+      <div class="flex items-center justify-between bg-slate-50 py-2 min-h-14 gap-4">
+        <div class="flex items-center gap-4">
+          <div id="statusDot" class="size-10 rounded-lg bg-[#e7edf3] flex items-center justify-center">
+            <div class="size-2.5 rounded-full bg-gray-400" id="dotPulse"></div>
+          </div>
+          <p id="status" class="text-base font-normal">Not Recording</p>
+        </div>
+        <p id="recordingTime" class="text-base font-normal hidden">00:00</p>
+      </div>
+
+      <!-- Audio Preview -->
+      <div id="audioPlayer" class="my-4 hidden">
+        <audio id="audioPlayback" controls class="w-full"></audio>
+      </div>
+
+      <!-- Loader -->
+      <div id="loadingAnimation" class="loader hidden border-4 border-gray-200 border-l-[#1980e6] rounded-full w-8 h-8 animate-spin mx-auto mt-4"></div>
+
+      <!-- Retry Button -->
+      <button id="retryUpload" class="w-full mt-2 text-[#0e141b] bg-white border border-gray-300 rounded-full h-10 text-sm font-bold hidden">
+        🔄 Retry Upload
+      </button>
+
+      <!-- Transcription -->
+      <div class="mt-6">
+        <label class="block text-base font-medium mb-2">Transcription</label>
+        <textarea
+          id="transcriptionText"
+          placeholder="Transcription will appear here"
+          class="w-full bg-[#e7edf3] rounded-xl p-4 text-base text-[#0e141b] placeholder:text-[#4e7397] focus:outline-none min-h-36 resize-none"
+        ></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col gap-2 mt-4">
+        <button id="saveTranscription" class="w-full h-10 rounded-full bg-[#1980e6] text-white text-sm font-bold">💾 Save</button>
+        <button id="copyBtn" class="w-full h-10 rounded-full bg-white border border-gray-300 text-[#0e141b] text-sm font-bold hidden">📋 Copy Text</button>
+        <button id="gotoFollowup" class="w-full h-10 rounded-full bg-[#e7edf3] text-[#0e141b] text-sm font-bold">✉️ Generate Follow-Up</button>
+      </div>
+
+      <!-- Past Recordings -->
+      <h3 class="text-lg font-bold mt-8 mb-2">Past Recordings</h3>
+      <div class="flex flex-col gap-4"></div>
+    </div>
+
+    <script type="module" src="../js/recorder.js"></script>
+  </body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Audio Recorder | Record and Transcribe</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+</head>
+<body>
+  <div class="recorder-container">
+    <header class="text-center">
+      <h1>Audio Recorder</h1>
+      <div class="user-info">
+        Logged in as: <span id="userEmail">Loading...</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- 🎤 Toggle Recording Button -->
+      <div class="recording-controls">
+        <button id="recordToggle" class="btn-primary">
+          <span class="icon">🎙️</span> Start Recording
+        </button>
+      </div>
+
+      <!-- 🔴 Recording Status -->
+      <div class="status-indicator">
+        <div id="statusDot" class="status-dot"></div>
+        <span id="status">Ready to record</span>
+        <span id="recordingTime" class="hidden">00:00</span>
+      </div>
+
+      <!-- 🔊 Audio Playback -->
+      <div class="audio-player hidden">
+        <audio id="audioPlayback" controls></audio>
+      </div>
+
+      <!-- ⏳ Upload Progress / Retry -->
+      <div id="loadingAnimation" class="loader hidden"></div>
+      <button id="retryUpload" class="btn-secondary hidden">🔄 Retry Upload</button>
+
+      <!-- ✏️ Transcription Area -->
+      <div class="transcription-container">
+        <textarea id="transcriptionText" placeholder="Transcription will appear here..."></textarea>
+        <div class="recording-controls">
+          <button id="saveTranscription" class="btn-primary">💾 Save</button>
+          <button id="copyBtn" class="btn-secondary hidden">📋 Copy Text</button>
+          <button id="gotoFollowup" class="btn-primary">✉️ Generate Follow-Up</button>
+        </div>
+      </div>
+
+      <!-- 📁 Previous Recordings -->
+      <div id="recordingList" class="recording-list">
+        <h3>Previous Recordings</h3>
+        <div id="recordingItems">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Transcript Preview</th>
+                <th>File</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rows inserted dynamically by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/recorder.js"></script>
+</body>
+</html>

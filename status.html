@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcription Editor</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        #status { font-size: 20px; font-weight: bold; }
+        #transcriptionText { width: 90%; height: 200px; font-size: 16px; display: none; }
+        .button-container { margin-top: 10px; }
+        button { font-size: 16px; padding: 10px; margin: 5px; cursor: pointer; display: none; }
+    </style>
+</head>
+<body>
+    <h1>Step 3</h1>
+    <p id="status">Fetching your transcription...</p>
+    <textarea id="transcriptionText" disabled></textarea><br>
+    
+    <div class="button-container">
+        <button id="editBtn">Edit</button>
+        <button id="saveBtn">Save</button>
+        <button id="copyBtn">📋 Copy to Clipboard</button>
+    </div>
+
+    <script>
+        const airtableBaseURL = "https://api.airtable.com/v0/appcQRU8kU0f9xO9l/Transcriptions";
+        const apiKey = "Bearer pat8waL0o0Bzsz9u5.92fd5d6afa56f123e309c2c6a5c6e5bbbc8d722ee25fccd5918e274f7d8aa540"; // ⚠️ Replace with a secure backend call
+
+        let recordId = "";
+        let transcriptionText = "";
+        let editedText = "";
+        let isEdited = false;
+
+        async function fetchTranscription() {
+            try {
+                const query = `filterByFormula=AND({user_id}='admin')&sort[0][field]=timestamp&sort[0][direction]=desc&maxRecords=1`;
+                const url = `${airtableBaseURL}?${query}`;
+                console.log("Fetching from:", url);
+
+                const response = await fetch(url, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": apiKey,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log("Fetched Data:", data);
+
+                if (!data.records || data.records.length === 0) {
+                    document.getElementById("status").innerText = "No transcription found!";
+                    return;
+                }
+
+                let record = data.records[0];
+                recordId = record.id;
+                transcriptionText = record.fields.transcription || "";
+                editedText = record.fields.edited_text || "";
+                isEdited = !!record.fields.is_edited; 
+
+                document.getElementById("status").innerText = "Transcription Loaded!";
+                document.getElementById("transcriptionText").value = isEdited ? editedText : transcriptionText;
+                document.getElementById("transcriptionText").style.display = "block";
+                document.getElementById("editBtn").style.display = "inline";
+                document.getElementById("copyBtn").style.display = "inline";
+            } catch (error) {
+                console.error("Fetch error:", error);
+                document.getElementById("status").innerText = "Failed to load transcription.";
+            }
+        }
+
+        document.getElementById("editBtn").addEventListener("click", function() {
+            document.getElementById("transcriptionText").disabled = false;
+            document.getElementById("editBtn").style.display = "none";
+            document.getElementById("saveBtn").style.display = "inline";
+        });
+
+        document.getElementById("saveBtn").addEventListener("click", async function() {
+            let updatedText = document.getElementById("transcriptionText").value;
+
+            try {
+                let response = await fetch(airtableBaseURL, {
+                    method: "PATCH",
+                    headers: {
+                        "Authorization": apiKey,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        records: [{
+                            id: recordId,
+                            fields: {
+                                edited_text: updatedText,
+                                is_edited: true
+                            }
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log("Save Response:", result);
+
+                document.getElementById("status").innerText = "Transcription saved successfully!";
+                document.getElementById("transcriptionText").disabled = true;
+                document.getElementById("editBtn").style.display = "inline";
+                document.getElementById("saveBtn").style.display = "none";
+                isEdited = true;
+                editedText = updatedText;
+            } catch (error) {
+                console.error("Save error:", error);
+                document.getElementById("status").innerText = "Failed to save transcription.";
+            }
+        });
+
+        document.getElementById("copyBtn").addEventListener("click", function() {
+            let textToCopy = isEdited ? editedText : transcriptionText;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                // ✅ Secure Context: Use modern Clipboard API
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert("✅ Text copied to clipboard!");
+                }).catch(err => {
+                    console.error("Clipboard API error:", err);
+                    fallbackClipboardCopy(textToCopy);
+                });
+            } else {
+                // ✅ Use Fallback Clipboard Method
+                fallbackClipboardCopy(textToCopy);
+            }
+        });
+
+        // ✅ Fallback Clipboard Function for older browsers or blocked Clipboard API
+        function fallbackClipboardCopy(text) {
+            let textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed"; // Avoids scrolling to bottom
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                let successful = document.execCommand("copy");
+                if (successful) {
+                    alert("✅ Text copied to clipboard!");
+                } else {
+                    console.error("Fallback copy failed.");
+                }
+            } catch (err) {
+                console.error("Fallback clipboard error:", err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        fetchTranscription();
+    </script>
+</body>
+</html>

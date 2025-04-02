@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Preferred Language</title>
+  <link rel="stylesheet" href="/public/output.css" />
+  <script type="module" src="/onboarding/language.js"></script>
+</head>
+<body>
+  <div class="onboarding-container">
+    <div class="onboarding-content">
+      <h1 class="onboarding-headline">What’s your main working language?</h1>
+      <p class="onboarding-subtext">This helps us improve transcription accuracy.</p>
+
+      <div class="language-options">
+        <button class="btn-secondary" onclick="selectLanguage('English')">English 🇬🇧</button>
+        <button class="btn-secondary" onclick="selectLanguage('Spanish')">Spanish 🇪🇸</button>
+        <button class="btn-secondary" onclick="selectLanguage('French')">French 🇫🇷</button>
+        <button class="btn-secondary" onclick="selectLanguage('German')">German 🇩🇪</button>
+        <button class="btn-secondary" onclick="selectLanguage('Other')">Other 🌐</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

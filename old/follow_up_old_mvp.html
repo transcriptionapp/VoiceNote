@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Follow-Up Mail | Transcription App</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="recorder-container">
+    <header>
+      <h1>📧 Follow-Up Mail Generator</h1>
+      <p class="subheading">AI-generated email based on your transcription</p>
+    </header>
+
+    <main>
+      <!-- Processing animation -->
+      <div id="loadingAnimation" class="loader" style="display: none;"></div>
+
+      <!-- Email draft container -->
+      <section class="transcription-container">
+        <label for="emailDraft"><strong>Generated Email:</strong></label>
+        <textarea
+          id="emailDraft"
+          rows="10"
+          placeholder="Generating your follow-up email..."
+          autocomplete="off"
+        ></textarea>
+
+        <!-- Save edited version -->
+        <button id="saveFollowUpBtn" class="btn-primary hidden">💾 Save Edits</button>
+
+        <!-- Placeholder Gmail button -->
+        <button id="sendViaGmail" class="btn-secondary">📤 Send Follow-Up via Gmail</button>
+      </section>
+
+      <!-- Status message output -->
+      <div id="status" class="text-center"></div>
+    </main>
+  </div>
+
+  <!-- JS logic for Assistant-based generation -->
+  <script type="module" src="../js/follow_up.js"></script>
+</body>
+</html>

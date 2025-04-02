@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Recorder & Transcription</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        button { font-size: 18px; padding: 10px; margin: 10px; cursor: pointer; }
+        textarea { width: 90%; height: 200px; font-size: 16px; display: none; }
+        audio { margin-top: 20px; display: none; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
+</head>
+<body>
+    <h1>Audio Recorder & Transcription</h1>
+    <p id="version">Version 1.3.7</p>
+
+    <button id="start">Start Recording</button>
+    <button id="stop" disabled>Stop Recording</button>
+    <p id="status">Press 'Start Recording'</p>
+
+    <audio id="audioPlayback" controls></audio>
+
+    <button id="retryUpload" style="display: none;">🔄 Retry Upload</button>
+
+    <textarea id="transcriptionText" readonly></textarea><br>
+    <button id="copyBtn" data-clipboard-target="#transcriptionText" style="display: none;">📋 Copy to Clipboard</button>
+    
+    <button id="gotoFollowup" style="display: none;">📨 Generate Follow-Up Email</button>
+
+    <script>
+        // Global Variables
+        let mediaRecorder, audioChunks = [], lastRecordedBlob = null;
+        const webhookURL = "https://hook.eu2.make.com/k3a1gdx5ypf75heuu72hdxz1j94d2o7z";
+        const airtableBaseURL = "https://api.airtable.com/v0/appcQRU8kU0f9xO9l/Recordings";
+        const apiKey = "Bearer pat8waL0o0Bzsz9u5.92fd5d6afa56f123e309c2c6a5c6e5bbbc8d722ee25fccd5918e274f7d8aa540";
+        let userId = "admin", recordingId = "", transcriptionId = "", lastTimestamp = "";
+
+        // Generate Unique ID
+        function generateUniqueId(prefix) {
+            return `${prefix}_${crypto.randomUUID()}`;
+        }
+
+        // Fetch transcription text from Airtable
+        async function fetchTranscription(retries = 5) {
+            if (!recordingId) {
+                console.error("fetchTranscription error: recordingId not set.");
+                return;
+            }
+            try {
+                const query = encodeURIComponent(`{recording_id}='${recordingId}'`);
+                const response = await fetch(`${airtableBaseURL}?filterByFormula=${query}`, {
+                    headers: {"Authorization": apiKey}
+                });
+                const data = await response.json();
+
+                if (data.records.length > 0) {
+                    let transcriptionText = data.records[0].fields.transcription || "";
+                    document.getElementById("transcriptionText").value = transcriptionText;
+                    document.getElementById("transcriptionText").style.display = "block";
+                    document.getElementById("copyBtn").style.display = "inline";
+                    document.getElementById("gotoFollowup").style.display = "inline";
+                    document.getElementById("status").innerText = "Transcription Loaded!";
+                    console.log("Transcription received:", transcriptionText);
+                } else if (retries > 0) {
+                    console.warn(`No transcription found, retrying... (${retries} attempts left)`);
+                    setTimeout(() => fetchTranscription(retries - 1), 5000);
+                } else {
+                    document.getElementById("status").innerText = "Transcription not found.";
+                }
+            } catch (error) {
+                console.error("Error fetching transcription:", error);
+            }
+        }
+
+        // Start Recording
+        document.getElementById("start").onclick = async function() {
+            let stream = await navigator.mediaDevices.getUserMedia({audio: true});
+            mediaRecorder = new MediaRecorder(stream, {mimeType: "audio/webm"});
+            mediaRecorder.start();
+            audioChunks = [];
+            transcriptionId = generateUniqueId("trans");
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            document.getElementById("start").disabled = true;
+            document.getElementById("stop").disabled = false;
+            document.getElementById("status").innerText = "Recording...";
+        };
+
+        // Stop Recording and Upload
+        document.getElementById("stop").onclick = function() {
+            mediaRecorder.stop();
+            mediaRecorder.onstop = async () => {
+                let audioBlob = new Blob(audioChunks, {type: "audio/mpeg"});
+                lastRecordedBlob = audioBlob;
+                recordingId = generateUniqueId("rec");
+                lastTimestamp = new Date().toISOString().replace(/:/g, "-");
+                let uniqueFilename = `${recordingId}_${lastTimestamp}.mp3`;
+
+                document.getElementById("audioPlayback").src = URL.createObjectURL(audioBlob);
+                document.getElementById("audioPlayback").style.display = "block";
+
+                await uploadRecording(audioBlob, uniqueFilename);
+                document.getElementById("start").disabled = false;
+                document.getElementById("stop").disabled = true;
+            };
+        };
+
+        // Upload audio file
+        async function uploadRecording(audioBlob, filename) {
+            let formData = new FormData();
+            formData.append("file", audioBlob, filename);
+            formData.append("recording_id", recordingId);
+            formData.append("transcription_id", transcriptionId);
+            formData.append("timestamp", new Date().toISOString());
+            formData.append("user_id", userId);
+
+            try {
+                let response = await fetch(webhookURL, {method: "POST", body: formData});
+                if (response.ok) {
+                    document.getElementById("status").innerText = "Uploaded. Awaiting transcription...";
+                    setTimeout(() => fetchTranscription(), 5000);
+                } else {
+                    throw new Error("Upload failed");
+                }
+            } catch (error) {
+                document.getElementById("status").innerText = "Upload Failed!";
+                document.getElementById("retryUpload").style.display = "inline";
+            }
+        }
+
+        // Retry upload
+        document.getElementById("retryUpload").onclick = async () => {
+            if (!lastRecordedBlob) return alert("⚠️ No audio to retry.");
+            document.getElementById("status").innerText = "Retrying...";
+            document.getElementById("retryUpload").style.display = "none";
+            await uploadRecording(lastRecordedBlob, `${recordingId}_${lastTimestamp}.mp3`);
+        };
+
+        // Clipboard Copy functionality
+        new ClipboardJS('#copyBtn').on('success', e => {
+            alert('✅ Text copied!');
+            e.clearSelection();
+        });
+
+        // Navigate to Follow-up email
+        document.getElementById("gotoFollowup").onclick = () => {
+            window.location.href = `https://transcriptionapp.github.io/audio-recorder/follow_up_mail.html?recording_id=${recordingId}&transcription_id=${transcriptionId}&user_id=${userId}`;
+        };
+    </script>
+</body>
+</html>
