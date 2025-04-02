@@ -5,8 +5,8 @@
   "main": "postcss.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:css": "tailwindcss -i ./css/tailwind.css -o ./public/output.css --minify",
-    "watch:css": "tailwindcss -i ./css/tailwind.css -o ./public/output.css --watch",
+    "build:css": "tailwindcss -i ./css/tailwind.css -o ./html/output.css --minify",
+    "watch:css": "tailwindcss -i ./css/tailwind.css -o ./html/output.css --watch",
     "dev": "vite",
     "build": "npm run build:css && vite build && node copy-static.js",
     "preview": "vite preview"
