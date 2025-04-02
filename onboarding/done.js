@@ -47,7 +47,7 @@ async function goToApp() {
 }
 
 function redirectToLogin() {
-  window.location.href = "/html/signup.html";
+  window.location.href = "/html/index.html";
 }
 
 // 🔥 Attach button listener + render summary

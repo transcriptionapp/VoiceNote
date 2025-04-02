@@ -2,7 +2,7 @@ import { supabase } from '../js/config.js';
 
 window.selectUseCase = async function(use_case) {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return (window.location.href = "/html/signup.html");
+  if (!user) return (window.location.href = "/html/index.html");
 
   const { error } = await supabase
     .from("users")
