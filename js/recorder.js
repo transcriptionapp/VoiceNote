@@ -320,7 +320,15 @@ async function loadRecordingList() {
     card.addEventListener("click", async () => {
       const audio = document.getElementById("audioPlayback");
       const audioPlayer = document.getElementById("audioPlayer");
-
+      
+      // Add functionality to only expand the transcription box if it's not already expanded
+      const existingBox = document.querySelector(`.transcript-box[data-id="${rec.id}"]`);
+      if (existingBox) {
+        existingBox.style.display = existingBox.style.display === 'none' ? 'block' : 'none';
+        return; // Prevent further actions if already expanded
+      }
+      
+      // Playback controls for the audio
       if (audio && rec.storage_path) {
         const { signedUrl, error } = await createSignedUrl(rec.storage_path);
         if (error || !signedUrl) {
@@ -333,19 +341,12 @@ async function loadRecordingList() {
         audio.src = "";
         audio.load();
         audio.src = signedUrl;
-        audio.autoplay = false;
-        audio.load(); // Ensure it's loaded but not playing
+        audio.autoplay = false; // Ensure it's loaded but not playing
 
         const playerContainer = document.getElementById("audioPlayer");
         if (playerContainer) {
           card.insertAdjacentElement("afterend", playerContainer);
           playerContainer.classList.remove("hidden");
-        }
-
-        const existingBox = document.querySelector(`.transcript-box[data-id="${rec.id}"]`);
-        if (existingBox) {
-          existingBox.remove();
-          return;
         }
 
         const transcriptText = rec.transcriptions?.[0]?.edited_text || rec.transcriptions?.[0]?.text || "(No transcription)";
