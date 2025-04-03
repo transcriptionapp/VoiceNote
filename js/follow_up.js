@@ -10,6 +10,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const emailBox = document.getElementById("emailDraft");
   const saveBtn = document.getElementById("saveFollowUpBtn");
   const gmailBtn = document.getElementById("sendViaGmail");
+  const spinner = document.getElementById("loadingAnimation");
 
   if (!loader || !emailBox || !saveBtn || !gmailBtn) {
     if (DEBUG) console.error("❌ One or more required DOM elements are missing");
@@ -32,7 +33,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  spinner.style.display = "block";
   const draft = await generateEmailWithAssistant(text);
+  spinner.style.display = "none";
 
   loader.style.display = "none";
   emailBox.value = draft;
