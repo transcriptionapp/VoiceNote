@@ -23,7 +23,11 @@
     <div class="w-full max-w-[480px] mx-auto flex flex-col flex-1 px-4 pb-6 pt-4">
       <!-- Header -->
       <div class="flex items-center justify-between pb-2">
-        <div id="avatarClick" class="size-8 rounded-full bg-cover bg-center bg-no-repeat cursor-pointer" style="background-image: url('https://cdn.usegalileo.ai/sdxl10/bbe14333-12fd-4d25-a0c2-18ad8d86d75e.png')"></div>
+        <button id="menuButton" class="p-2" title="Menu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-[#0e141b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
         <h2 class="text-lg font-bold tracking-[-0.015em] flex-1 text-center">Transcribe</h2>
         <button class="text-[#0e141b] p-2" title="Settings">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
@@ -99,12 +103,11 @@
 
     <template id="recordingCardTemplate">
       <div class="bg-white border border-gray-300 rounded-xl p-4 shadow-sm relative">
-        <button class="absolute top-2 right-2 text-gray-500 hover:text-red-600 delete-recording-btn" title="Delete Recording">🗑️</button>
         <p class="text-sm text-gray-500 mb-2">Recording from <span class="recording-date"></span></p>
         <audio class="w-full recording-audio" controls></audio>
-        <div class="mt-2 transcription-wrapper hidden">
+        <div class="mt-4 transcription-wrapper hidden bg-[#e7edf3] rounded-xl p-3">
           <label class="block text-sm font-medium mb-1">Transcription</label>
-          <textarea readonly class="w-full bg-[#e7edf3] text-sm text-[#0e141b] rounded-xl p-3 border border-gray-300 resize-none transcription-text"></textarea>
+          <textarea readonly class="w-full text-sm text-[#0e141b] rounded-xl p-3 border border-gray-300 resize-none transcription-text"></textarea>
         </div>
       </div>
     </template>

@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function setupEventListeners() {
-  const avatar = document.getElementById("avatarClick");
+  const avatar = document.getElementById("menuButton");
   if (avatar) {
     avatar.addEventListener("click", () => {
       const sideNav = document.getElementById("sideNav");
@@ -298,15 +298,6 @@ async function loadRecordingList() {
       </div>
     `;
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded";
-    deleteBtn.innerText = "Delete";
-    deleteBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      deleteRecording(rec.id);
-    });
-    card.appendChild(deleteBtn);
-
     card.addEventListener("click", async () => {
       const audio = document.getElementById("audioPlayback");
       const audioPlayer = document.getElementById("audioPlayer");
@@ -341,9 +332,8 @@ async function loadRecordingList() {
 
         const transcriptText = rec.transcriptions?.[0]?.edited_text || rec.transcriptions?.[0]?.text || "(No transcription)";
         transcriptBox = document.createElement("div");
-        transcriptBox.className = "transcript-box bg-slate-50 text-[#0e141b] text-sm px-4 py-2 whitespace-pre-wrap";
+        transcriptBox.className = "transcript-box w-full bg-[#e7edf3] rounded-xl p-4 text-base text-[#0e141b] placeholder:text-[#4e7397] focus:outline-none resize-none mt-2";
         transcriptBox.innerText = transcriptText;
-
         card.insertAdjacentElement("afterend", transcriptBox);
       }
     });
