@@ -23,7 +23,7 @@
     <div class="w-full max-w-[480px] mx-auto flex flex-col flex-1 px-4 pb-6 pt-4">
       <!-- Header -->
       <div class="flex items-center justify-between pb-2">
-        <div class="size-8 rounded-full bg-cover bg-center bg-no-repeat" style="background-image: url('https://cdn.usegalileo.ai/sdxl10/bbe14333-12fd-4d25-a0c2-18ad8d86d75e.png')"></div>
+        <div id="avatarClick" class="size-8 rounded-full bg-cover bg-center bg-no-repeat cursor-pointer" style="background-image: url('https://cdn.usegalileo.ai/sdxl10/bbe14333-12fd-4d25-a0c2-18ad8d86d75e.png')"></div>
         <h2 class="text-lg font-bold tracking-[-0.015em] flex-1 text-center">Transcribe</h2>
         <button class="text-[#0e141b] p-2" title="Settings">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
@@ -74,6 +74,11 @@
           placeholder="Transcription will appear here"
           class="w-full bg-[#e7edf3] rounded-xl p-4 text-base text-[#0e141b] placeholder:text-[#4e7397] focus:outline-none min-h-36 resize-none"
         ></textarea>
+      </div>
+
+      <div id="transcriptionFullBox" class="hidden mt-4">
+        <label class="block text-base font-medium mb-2">Full Transcription</label>
+        <textarea id="transcriptionFullText" readonly class="w-full bg-white rounded-xl p-4 text-base border border-gray-300 resize-none min-h-36"></textarea>
       </div>
 
       <!-- Action Buttons -->

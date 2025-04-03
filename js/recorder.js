@@ -42,6 +42,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function setupEventListeners() {
+  const avatar = document.getElementById("avatarClick");
+  if (avatar) {
+    avatar.addEventListener("click", () => {
+      const fullBox = document.getElementById("transcriptionFullBox");
+      const fullText = document.getElementById("transcriptionFullText");
+      const currentText = document.getElementById("transcriptionText")?.value || "";
+      if (fullBox && fullText && currentText) {
+        fullText.value = currentText;
+        fullBox.classList.toggle("hidden");
+      }
+    });
+  }
+
   const toggleBtn = document.getElementById("recordToggle");
   if (toggleBtn) {
     toggleBtn.addEventListener("click", () => {
@@ -111,6 +124,9 @@ function formatTime(seconds) {
 async function startRecording() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    await audioContext.resume();
+    
     mediaRecorder = new MediaRecorder(stream, {
       mimeType: "audio/webm",
       audioBitsPerSecond: 128000,
@@ -194,6 +210,14 @@ async function handleUpload(audioBlob) {
       const transcriptBox = document.getElementById("transcriptionText");
       if (transcriptBox) {
         transcriptBox.value = transcript;
+        
+        const gotoFollowup = document.getElementById("gotoFollowup");
+        if (gotoFollowup) {
+          gotoFollowup.disabled = false;
+          gotoFollowup.classList.remove("bg-[#e7edf3]", "text-[#0e141b]");
+          gotoFollowup.classList.add("bg-[#1980e6]", "text-white");
+        }
+        
         originalTranscript = transcript;
       }
 
@@ -326,7 +350,7 @@ function navigateToFollowup() {
       return;
     }
 
-    const url = `follow_up.html?recording_id=${recording.id}`;
+    const url = `./follow_up.html?recording_id=${recording.id}`;
     console.log("➡️ Navigating to:", url);
     window.location.href = url;
   }).catch((error) => {
