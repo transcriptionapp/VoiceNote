@@ -245,6 +245,20 @@ async function saveRecordingMetadata({ recordingId, userId, publicUrl, filename,
   }
 }
 
+// ✅ NEW: Delete recording (metadata + storage)
+async function deleteRecording(recordingId, storagePath) {
+  try {
+    const { error } = await supabase.from('recordings').delete().eq('id', recordingId);
+    if (error) throw error;
+
+    const removed = await deleteRecordingFromStorage(storagePath);
+    return removed;
+  } catch (e) {
+    // console.error("Failed to delete recording:", e.message);
+    return false;
+  }
+}
+
 export {
   uploadRecording,
   transcribeRecording,
@@ -257,5 +271,6 @@ export {
   saveEditedTranscription,
   createSignedUrl,
   deleteRecordingFromStorage,
-  generateUniqueId
+  generateUniqueId,
+  deleteRecording // ✅ newly added
 };

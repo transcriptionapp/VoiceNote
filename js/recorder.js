@@ -313,13 +313,26 @@ async function loadRecordingList() {
         }
         audio.src = signedUrl;
         audio.play();
-        
-        // Move playback below card
+
         const playerContainer = document.getElementById("audioPlayer");
         if (playerContainer) {
           card.insertAdjacentElement("afterend", playerContainer);
           playerContainer.classList.remove("hidden");
         }
+
+        // Insert or toggle full transcript box
+        let transcriptBox = card.nextElementSibling;
+        if (transcriptBox && transcriptBox.classList.contains("transcript-box")) {
+          transcriptBox.classList.toggle("hidden");
+          return;
+        }
+
+        const transcriptText = rec.transcriptions?.[0]?.edited_text || rec.transcriptions?.[0]?.text || "(No transcription)";
+        transcriptBox = document.createElement("div");
+        transcriptBox.className = "transcript-box bg-slate-50 text-[#0e141b] text-sm px-4 py-2 whitespace-pre-wrap";
+        transcriptBox.innerText = transcriptText;
+
+        card.insertAdjacentElement("afterend", transcriptBox);
       }
     });
 

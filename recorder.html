@@ -94,8 +94,20 @@
 
       <!-- Past Recordings -->
       <h3 class="text-lg font-bold mt-8 mb-2">Past Recordings</h3>
-      <div class="flex flex-col gap-4"></div>
+      <div id="recordingsList" class="flex flex-col gap-4"></div>
     </div>
+
+    <template id="recordingCardTemplate">
+      <div class="bg-white border border-gray-300 rounded-xl p-4 shadow-sm relative">
+        <button class="absolute top-2 right-2 text-gray-500 hover:text-red-600 delete-recording-btn" title="Delete Recording">🗑️</button>
+        <p class="text-sm text-gray-500 mb-2">Recording from <span class="recording-date"></span></p>
+        <audio class="w-full recording-audio" controls></audio>
+        <div class="mt-2 transcription-wrapper hidden">
+          <label class="block text-sm font-medium mb-1">Transcription</label>
+          <textarea readonly class="w-full bg-[#e7edf3] text-sm text-[#0e141b] rounded-xl p-3 border border-gray-300 resize-none transcription-text"></textarea>
+        </div>
+      </div>
+    </template>
 
     <script type="module" src="./js/recorder.js"></script>
   </body>
