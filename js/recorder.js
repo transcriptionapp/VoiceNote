@@ -316,7 +316,7 @@ async function loadRecordingList() {
           audio.currentTime = 0;
         }
         audio.src = signedUrl;
-        audio.play();
+        audio.load(); // preload audio but don't autoplay
 
         const playerContainer = document.getElementById("audioPlayer");
         if (playerContainer) {
