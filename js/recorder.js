@@ -311,12 +311,12 @@ async function loadRecordingList() {
           return;
         }
 
-        if (!audio.paused) {
-          audio.pause();
-          audio.currentTime = 0;
-        }
+        audio.pause();
+        audio.src = "";
+        audio.load();
         audio.src = signedUrl;
-        audio.load(); // preload audio but don't autoplay
+        audio.autoplay = false;
+        audio.load(); // Ensure it's loaded but not playing
 
         const playerContainer = document.getElementById("audioPlayer");
         if (playerContainer) {
