@@ -52,12 +52,24 @@ function setupEventListeners() {
   const avatar = document.getElementById("avatarClick");
   if (avatar) {
     avatar.addEventListener("click", () => {
-      const fullBox = document.getElementById("transcriptionFullBox");
-      const fullText = document.getElementById("transcriptionFullText");
-      const currentText = document.getElementById("transcriptionText")?.value || "";
-      if (fullBox && fullText && currentText) {
-        fullText.value = currentText;
-        fullBox.classList.toggle("hidden");
+      const sideNav = document.getElementById("sideNav");
+      const overlay = document.getElementById("sideNavOverlay");
+      if (sideNav && overlay) {
+        sideNav.classList.toggle("translate-x-0");
+        sideNav.classList.toggle("-translate-x-full");
+        overlay.classList.toggle("hidden");
+      }
+    });
+  }
+
+  const overlay = document.getElementById("sideNavOverlay");
+  if (overlay) {
+    overlay.addEventListener("click", () => {
+      overlay.classList.add("hidden");
+      const sideNav = document.getElementById("sideNav");
+      if (sideNav) {
+        sideNav.classList.add("-translate-x-full");
+        sideNav.classList.remove("translate-x-0");
       }
     });
   }
