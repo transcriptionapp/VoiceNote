@@ -289,6 +289,7 @@ async function loadRecordingList() {
 
     const card = document.createElement("div");
     card.className = "bg-cover bg-center rounded-xl pt-[132px] cursor-pointer";
+    card.dataset.recordingId = rec.id;
     card.style.backgroundImage = `linear-gradient(0deg, rgba(0,0,0,0.4), rgba(0,0,0,0)), url('${bgUrl}')`;
 
     card.innerHTML = `
@@ -323,16 +324,16 @@ async function loadRecordingList() {
           playerContainer.classList.remove("hidden");
         }
 
-        // Insert or toggle full transcript box
-        let transcriptBox = card.nextElementSibling;
-        if (transcriptBox && transcriptBox.classList.contains("transcript-box")) {
-          transcriptBox.classList.toggle("hidden");
+        const existingBox = document.querySelector(`.transcript-box[data-id="${rec.id}"]`);
+        if (existingBox) {
+          existingBox.remove();
           return;
         }
 
         const transcriptText = rec.transcriptions?.[0]?.edited_text || rec.transcriptions?.[0]?.text || "(No transcription)";
-        transcriptBox = document.createElement("div");
+        const transcriptBox = document.createElement("div");
         transcriptBox.className = "transcript-box w-full bg-[#e7edf3] rounded-xl p-4 text-base text-[#0e141b] placeholder:text-[#4e7397] focus:outline-none resize-none mt-2";
+        transcriptBox.dataset.id = rec.id;
         transcriptBox.innerText = transcriptText;
         card.insertAdjacentElement("afterend", transcriptBox);
       }
