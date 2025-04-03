@@ -81,9 +81,9 @@ async function redirectBasedOnOnboarding(userId) {
     .single();
 
   if (error || data?.onboarded !== true) {
-    window.location.href = "/onboarding/welcome.html";
+    window.location.href = "./onboarding/welcome.html";
   } else {
-    window.location.href = "/recorder.html";
+    window.location.href = "./recorder.html";
   }
 }
 
@@ -157,7 +157,7 @@ googleBtn?.addEventListener("click", async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/onboarding/welcome.html`,
+        redirectTo: `${window.location.origin}/VoiceNote/onboarding/welcome.html`,
       },
     });
 
