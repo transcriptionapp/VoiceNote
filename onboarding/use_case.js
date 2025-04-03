@@ -2,7 +2,7 @@ import { supabase } from '../js/config.js';
 
 window.selectUseCase = async function(use_case) {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return (window.location.href = "/html/index.html");
+  if (!user) return (window.location.href = "/index.html");
 
   const { error } = await supabase
     .from("users")
@@ -13,6 +13,6 @@ window.selectUseCase = async function(use_case) {
     console.error("❌ Failed to update use case:", error);
     alert("Something went wrong saving your input.");
   } else {
-    window.location.href = "tools.html";
+    window.location.href = "/onboarding/tools.html";
   }
 };

@@ -326,7 +326,7 @@ function navigateToFollowup() {
       return;
     }
 
-    const url = `follow_up.html?recording_id=${recording.id}`;
+    const url = `/follow_up.html?recording_id=${recording.id}`;
     console.log("➡️ Navigating to:", url);
     window.location.href = url;
   }).catch((error) => {

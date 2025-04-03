@@ -4,8 +4,7 @@ module.exports = {
     "./html/**/*.{html,js}",
     "./js/**/*.{html,js}",
     "./onboarding/**/*.{html,js}",
-    "./*.html",
-    "./html/output.css"
+    "./*.html"
   ],
   theme: {
     extend: {},

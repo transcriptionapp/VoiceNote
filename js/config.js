@@ -3,8 +3,8 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 // ✅ Supabase Credentials
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_URL = "https://fxuafoiuwzsjezuqzjgn.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4dWFmb2l1d3pzamV6dXF6amduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1NjQyNzEsImV4cCI6MjA1ODE0MDI3MX0.JhlxbWxMLp2ke05Em__gPbGAPcA24Rwbg9eOaWwMZ04";
 
 // ✅ Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -89,24 +89,23 @@ async function debugAuthStatus() {
 if (import.meta.env?.MODE === "development") {
   window._supabase = supabase;
   window._getUserId = getUserId;
-}
 
-if (typeof window !== "undefined") {
-  window._supabaseDebug = {
-    auth: {
-      getSession: () => supabase.auth.getSession(),
-      getUser: () => supabase.auth.getUser(),
-      getUserId: async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        return user?.id;
+  if (typeof window !== "undefined") {
+    window._supabaseDebug = {
+      auth: {
+        getSession: () => supabase.auth.getSession(),
+        getUser: () => supabase.auth.getUser(),
+        getUserId: async () => {
+          const { data: { user } } = await supabase.auth.getUser();
+          return user?.id;
+        }
+      },
+      storage: {
+        listBuckets: () => supabase.storage.listBuckets(),
+        getBucket: name => supabase.storage.getBucket(name)
       }
-    },
-    storage: {
-      listBuckets: () => supabase.storage.listBuckets(),
-      getBucket: name => supabase.storage.getBucket(name)
-    }
-  };
-  console.log("Debug tools available via _supabaseDebug");
+    };
+  }
 }
 
 // ✅ Public exports

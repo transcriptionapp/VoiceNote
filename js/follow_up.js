@@ -3,6 +3,7 @@ import { supabase, getUserId } from "../js/config.js";
 const params = new URLSearchParams(window.location.search);
 const recordingId = params.get("recording_id");
 let originalDraft = "";
+const DEBUG = false; // Set to true for debugging
 
 window.addEventListener("DOMContentLoaded", async () => {
   const loader = document.getElementById("loadingAnimation");
@@ -10,10 +11,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   const saveBtn = document.getElementById("saveFollowUpBtn");
   const gmailBtn = document.getElementById("sendViaGmail");
 
-  console.log("🔍 recordingId:", recordingId);
-
   if (!loader || !emailBox || !saveBtn || !gmailBtn) {
-    console.error("❌ One or more required DOM elements are missing");
+    if (DEBUG) console.error("❌ One or more required DOM elements are missing");
     return;
   }
 
@@ -25,7 +24,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   loader.style.display = "block";
 
   const text = await fetchTranscript(recordingId);
-  console.log("📄 Raw transcription text:", text);
+  if (DEBUG) console.log("📄 Raw transcription text:", text);
 
   if (!text) {
     loader.style.display = "none";
@@ -43,7 +42,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   saveBtn.addEventListener("click", async () => {
     const userId = await getUserId();
     if (!userId) {
-      console.error("❌ User not authenticated");
+      if (DEBUG) console.error("❌ User not authenticated");
       return;
     }
 
@@ -57,7 +56,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       .eq("user_id", userId);
 
     if (error) {
-      console.error("❌ Failed to save edited draft:", error);
+      if (DEBUG) console.error("❌ Failed to save edited draft:", error);
     } else {
       originalDraft = updatedText;
       saveBtn.classList.add("hidden");
@@ -83,7 +82,7 @@ async function fetchTranscript(id) {
     .maybeSingle();
 
   if (error) {
-    console.error("❌ Error fetching transcription from Supabase:", error);
+    if (DEBUG) console.error("❌ Error fetching transcription from Supabase:", error);
     return "";
   }
 
@@ -119,7 +118,7 @@ async function generateEmailWithAssistant(text) {
     const { email_text } = await response.json();
     return email_text || "⚠️ No email draft returned.";
   } catch (err) {
-    console.error("❌ Assistant generation failed:", err);
+    if (DEBUG) console.error("❌ Assistant generation failed:", err);
     return `❌ Assistant failed to generate follow-up email: ${err.message}`;
   }
 }

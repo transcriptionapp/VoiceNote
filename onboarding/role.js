@@ -2,7 +2,7 @@ import { supabase } from '/js/config.js';
 
 window.selectRole = async function (role) {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return window.location.href = '/login.html';
+  if (!user) return window.location.href = '/index.html';
 
   const { error } = await supabase
     .from('users')
@@ -13,6 +13,6 @@ window.selectRole = async function (role) {
     console.error('Failed to update role:', error);
     alert('Something went wrong saving your role.');
   } else {
-    window.location.href = 'use_case.html';
+    window.location.href = '/onboarding/use_case.html';
   }
 };

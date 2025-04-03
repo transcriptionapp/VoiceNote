@@ -42,12 +42,12 @@ async function goToApp() {
   if (error) {
     alert("Failed to finish onboarding. Try again.");
   } else {
-    window.location.href = "/html/recorder.html"; // Adjust path if needed
+    window.location.href = "/recorder.html"; // Adjust path if needed
   }
 }
 
 function redirectToLogin() {
-  window.location.href = "/html/index.html";
+  window.location.href = "/index.html";
 }
 
 // 🔥 Attach button listener + render summary

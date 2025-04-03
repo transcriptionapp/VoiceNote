@@ -20,7 +20,7 @@ window.submitTools = async () => {
 
   const tools = Array.from(selectedTools).join(', ');
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return window.location.href = "/login.html";
+  if (!user) return window.location.href = "/index.html";
 
   const { error } = await supabase
     .from("users")

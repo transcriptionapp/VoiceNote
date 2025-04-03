@@ -83,7 +83,7 @@ async function redirectBasedOnOnboarding(userId) {
   if (error || data?.onboarded !== true) {
     window.location.href = "/onboarding/welcome.html";
   } else {
-    window.location.href = "./recorder.html";
+    window.location.href = "/recorder.html";
   }
 }
 
