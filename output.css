@@ -32,3 +32,29 @@
 .slide-in-overlay.show {
   display: block;
 }
+
+.transcription-box {
+  background-color: #e7edf3;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: #0e141b;
+  line-height: 1.5;
+}
+
+.recording-thumbnail {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.recording-thumbnail:hover {
+  transform: scale(1.03);
+}
+
+.recording-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}

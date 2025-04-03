@@ -48,6 +48,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadRecordingList();
 });
 
+<!-- Hamburger Menu & Overlay -->
+<div id="sideNavOverlay" class="fixed inset-0 bg-black/40 hidden z-40"></div>
+
+<!-- Side Navigation Panel -->
+<aside id="sideNav" class="fixed top-0 left-0 w-64 h-full bg-white shadow-lg rounded-br-3xl z-50 transform -translate-x-full transition-transform duration-300">
+  <div class="bg-yellow-400 px-4 py-6 flex items-center gap-3">
+    <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full object-cover" />
+    <div>
+      <p class="text-sm font-bold text-black" id="userEmail">Your Profile</p>
+    </div>
+  </div>
+  <nav class="px-4 pt-2">
+    <button class="w-full text-left py-2 px-2 hover:bg-yellow-100 text-sm" id="changeInterestsBtn">✏️ Change my interests</button>
+    <button class="w-full text-left py-2 px-2 hover:bg-yellow-100 text-sm" id="deleteDataBtn">🗑️ Delete all my data</button>
+    <button class="w-full text-left py-2 px-2 hover:bg-yellow-100 text-sm" id="logoutBtn">📕 Log out</button>
+  </nav>
+</aside>
+
 function setupEventListeners() {
   const avatar = document.getElementById("menuButton");
   if (avatar) {
