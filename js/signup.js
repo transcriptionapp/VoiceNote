@@ -1,5 +1,12 @@
 import { supabase } from "../js/config.js";
 
+// Check if session exists and redirect immediately if logged in
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session?.user) {
+    redirectBasedOnOnboarding(session.user.id);
+  }
+});
+
 let mode = "signin";
 
 const authBtn = document.getElementById("authBtn");

@@ -10,6 +10,13 @@ import {
 } from "./api.js";
 import { transcribeAudio } from "./transcribe.js";
 
+// Redirect to login if no active session
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (!session?.user) {
+    window.location.href = 'index.html';
+  }
+});
+
 let mediaRecorder,
   audioChunks = [],
   lastRecordedBlob = null,
