@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="output.css" />
   </head>
   <body class="bg-slate-50 font-sans">
-    <div class="min-h-screen flex flex-col justify-between overflow-x-hidden">
+    <div class="min-h-screen flex flex-col overflow-x-hidden">
       <!-- Header -->
       <div>
         <div class="flex items-center p-4 pb-2 justify-between">
@@ -38,17 +38,23 @@
             AI-generated email based on your transcription
           </p>
         </div>
+      </div>
 
-        <!-- Email Box -->
+      <!-- Email Box -->
+      <div class="flex-grow">
         <div class="max-w-[480px] w-full mx-auto px-4 py-4">
           <label class="flex flex-col w-full">
             <p class="text-[#0e141b] text-base font-medium leading-normal pb-2">Generated Email:</p>
             <textarea
               id="emailDraft"
               placeholder="Generating your follow-up email..."
-              class="form-input w-full resize-vertical overflow-hidden rounded-xl text-[#0e141b] focus:outline-none focus:ring-0 border border-[#d0dbe7] bg-white focus:border-[#1980e6] min-h-[150px] placeholder:text-[#4e7397] p-[15px] text-base font-normal leading-normal"
+              class="form-input w-full resize-vertical overflow-hidden rounded-xl text-[#0e141b] focus:outline-none focus:ring-0 border border-[#d0dbe7] bg-white focus:border-[#1980e6] min-h-[150px] placeholder:text-[#4e7397] p-[15px] text-base font-normal leading-normal flex-grow"
             ></textarea>
           </label>
+        </div>
+        <!-- Hidden loader -->
+        <div class="flex justify-center py-4">
+          <div id="loadingAnimation" class="loader hidden w-8 h-8 border-4 border-gray-200 border-l-[#1980e6] rounded-full animate-spin"></div>
         </div>
       </div>
 
@@ -69,9 +75,6 @@
           <button class="w-full h-12 rounded-full bg-[#4b5563] text-white font-bold text-base">💾 Save Edits</button>
         </div>
       </div>
-
-      <!-- Hidden loader -->
-      <div id="loadingAnimation" class="loader hidden mx-auto mb-4"></div>
     </div>
 
     <!-- Status message output -->

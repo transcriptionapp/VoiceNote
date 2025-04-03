@@ -30,6 +30,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (!text) {
     loader.style.display = "none";
     emailBox.value = "❌ No transcription text found.";
+    // Disable follow-up button if no transcription is found
+    gmailBtn.disabled = true;
+    gmailBtn.classList.add("cursor-not-allowed", "opacity-50");
+    gmailBtn.addEventListener("click", () => {
+      alert("⚠️ No transcription available to generate follow-up.");
+    });
     return;
   }
 
@@ -39,6 +45,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   loader.style.display = "none";
   emailBox.value = draft;
+  gmailBtn.disabled = false;
+  gmailBtn.classList.remove("cursor-not-allowed", "opacity-50");
   originalDraft = draft;
   saveBtn.classList.add("hidden");
 

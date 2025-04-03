@@ -220,9 +220,15 @@ async function handleUpload(audioBlob) {
         
         const gotoFollowup = document.getElementById("gotoFollowup");
         if (gotoFollowup) {
-          gotoFollowup.disabled = false;
-          gotoFollowup.classList.remove("bg-[#e7edf3]", "text-[#0e141b]");
-          gotoFollowup.classList.add("bg-[#1980e6]", "text-white");
+          if (transcript && transcript.length > 0) {
+            gotoFollowup.disabled = false;
+            gotoFollowup.classList.remove("bg-[#e7edf3]", "text-[#0e141b]");
+            gotoFollowup.classList.add("bg-[#1980e6]", "text-white");
+          } else {
+            gotoFollowup.disabled = true;
+            gotoFollowup.classList.add("bg-[#e7edf3]", "text-[#0e141b]");
+            gotoFollowup.classList.remove("bg-[#1980e6]", "text-white");
+          }
         }
         
         originalTranscript = transcript;
@@ -307,7 +313,13 @@ async function loadRecordingList() {
         }
         audio.src = signedUrl;
         audio.play();
-        audioPlayer.classList.remove("hidden");
+        
+        // Move playback below card
+        const playerContainer = document.getElementById("audioPlayer");
+        if (playerContainer) {
+          card.insertAdjacentElement("afterend", playerContainer);
+          playerContainer.classList.remove("hidden");
+        }
       }
     });
 
@@ -332,6 +344,12 @@ function navigateToFollowup() {
 
   if (!userId) {
     updateUI("⚠️ User ID missing — cannot fetch latest recording.");
+    return;
+  }
+
+  const currentTranscript = document.getElementById("transcriptionText")?.value?.trim();
+  if (!currentTranscript || currentTranscript.length === 0) {
+    alert("⚠️ No transcription available to generate follow-up.");
     return;
   }
 
