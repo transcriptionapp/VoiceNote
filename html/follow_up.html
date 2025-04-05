@@ -11,7 +11,7 @@
       onload="this.rel='stylesheet'"
       href="https://fonts.googleapis.com/css2?display=swap&family=Manrope:wght@400;500;700;800&family=Noto+Sans:wght@400;500;700;900"
     />
-    <link rel="stylesheet" href="output.css" />
+    <link rel="stylesheet" href="/css/output.css" />
   </head>
   <body class="bg-slate-50 font-sans">
     <div class="min-h-screen flex flex-col overflow-x-hidden">
@@ -52,9 +52,18 @@
             ></textarea>
           </label>
         </div>
+        
         <!-- Hidden loader -->
         <div class="flex justify-center py-4">
           <div id="loadingAnimation" class="loader hidden w-8 h-8 border-4 border-gray-200 border-l-[#1980e6] rounded-full animate-spin"></div>
+        </div>
+
+        <!-- Error Box -->
+        <div id="errorBox" class="hidden text-red-500 text-sm text-center px-4"></div>
+
+        <!-- Progress Bar for follow-up generation -->
+        <div class="w-full max-w-[480px] mx-auto px-4 pb-4">
+          <progress id="followUpProgressBar" value="0" max="100" class="w-full h-2 hidden rounded-full overflow-hidden bg-gray-200"></progress>
         </div>
       </div>
 
@@ -80,6 +89,6 @@
     <!-- Status message output -->
     <div id="status" class="text-center py-4 text-sm text-gray-500"></div>
 
-    <script type="module" src="./js/follow_up.js"></script>
+    <script type="module" src="../js/follow_up.js"></script>
   </body>
 </html>

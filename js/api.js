@@ -1,4 +1,3 @@
-// 🔍 TEMPORARY DEBUG LOGGING — REMOVE BEFORE DEPLOYMENT
 // api.js - Supabase API + Edge Function Handler
 import { supabase, getUserId } from "./config.js";
 
@@ -12,10 +11,6 @@ async function verifyAuth() {
   const userId = await getUserId();
   if (!userId) {
     const { data: { session } } = await supabase.auth.getSession();
-    // console.error("Auth verification failed", {
-    //   hasSession: !!session,
-    //   storedUserId: localStorage.getItem('sb-auth')
-    // });
     throw new Error("Not authenticated");
   }
   return userId;
@@ -57,13 +52,6 @@ async function uploadRecording(audioBlob, filename, recordingId) {
       blob: audioBlob
     });
 
-    // console.log("✅ Upload succeeded:", {
-    //   recordingId,
-    //   file_url: fileUrl,
-    //   storage_path: uploadData?.path,
-    //   fileSize: audioBlob.size
-    // });
-
     return {
       file_url: fileUrl,
       storage_path: uploadData?.path,
@@ -75,14 +63,11 @@ async function uploadRecording(audioBlob, filename, recordingId) {
     };
 
   } catch (error) {
-    // console.error("❌ Upload recording failed:", error);
-    // console.error("Upload failed:", error.message);
     if (storagePath) {
       await supabase.storage.from("recordings")
-        .remove([storagePath])
-        // .catch(e => console.warn("Cleanup failed:", e));
+        .remove([storagePath]);
     }
-    return false; // TODO: Remove debug logs after testing
+    return false;
   }
 }
 
@@ -104,67 +89,85 @@ async function transcribeRecording(recordingId) {
     const result = await response.json();
     return result.text;
   } catch (error) {
-    // console.error("Transcription error:", error.message);
     return null;
   }
 }
 
 // ✅ Save & edit transcription
 async function saveTranscription(recordingId, text) { /* unchanged */ }
-async function saveEditedTranscription(recordingId, editedText) { /* unchanged */ }
-
-async function fetchTranscription(recordingId) { /* unchanged */ }
-
-// ✅ Fetch and request follow-up email
-async function requestFollowUp(recordingId) {
-  if (!recordingId) {
-    // console.error("No recordingId provided");
-    return false;
-  }
-
+async function saveEditedTranscription(recordingId, editedText) {
   try {
-    const emailText = await generateFollowUpEmail(recordingId);
-    const { error } = await supabase.from("follow_ups").insert([{
-      transcription_id: recordingId,
-      email_text: emailText,
-      created_at: new Date().toISOString()
-    }]);
+    const { error: updateTranscriptionError } = await supabase
+      .from('transcriptions')
+      .update({
+        edited_text: editedText,
+      })
+      .eq('recording_id', recordingId);
 
-    return !error;
+    if (updateTranscriptionError) {
+      throw new Error(`Failed to update transcription: ${updateTranscriptionError.message}`);
+    }
+
+    const { error: updateRecordingError } = await supabase
+      .from('recordings')
+      .update({ is_edited: true })
+      .eq('id', recordingId);
+
+    if (updateRecordingError) {
+      throw new Error(`Failed to update 'is_edited' flag: ${updateRecordingError.message}`);
+    }
+
+    return true;
   } catch (error) {
-    // console.error("Follow-up request failed:", error.message);
     return false;
   }
 }
+async function fetchTranscription(recordingId) { /* unchanged */ }
 
-async function fetchFollowUpEmail(recordingId) { /* unchanged */ }
-
-// ✅ NEW: Generate follow-up via Edge Function
+// ✅ Fetch and request follow-up email
 async function generateFollowUpEmail(recordingId) {
   try {
-    const userId = await verifyAuth();
-    const response = await fetch(`/functions/v1/generate-followup`, {
+    const userId = await getUserId();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.access_token) throw new Error("No Supabase session found");
+
+    console.log("🔁 Calling generate-follow-up with:", {
+      recordingId,
+      userId,
+      token: session.access_token
+    });
+
+    const response = await fetch("https://fxuafoiuwzsjezuqzjgn.supabase.co/functions/v1/generate-follow-up", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ transcription_id: recordingId, user_id: userId }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        transcription_id: recordingId,
+        user_id: userId,
+      }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Follow-up failed: ${errorText}`);
+      throw new Error(`Follow-up failed: ${response.status} ${errorText}`);
     }
 
     const { email_text } = await response.json();
     return email_text;
   } catch (error) {
-    // console.error("generateFollowUpEmail error:", error.message);
+    console.error("generateFollowUpEmail error:", error);
     return "";
   }
 }
 
+async function fetchFollowUpEmail(recordingId) { /* unchanged */ }
+
+
 async function getLatestRecording(userId) {
   if (!userId) {
-    // console.warn("getLatestRecording called without userId");
     return null;
   }
 
@@ -177,7 +180,6 @@ async function getLatestRecording(userId) {
     .maybeSingle();
 
   if (error) {
-    // console.error("Failed to fetch latest recording:", error.message);
     return null;
   }
 
@@ -194,7 +196,6 @@ async function createSignedUrl(storagePath) {
 
     return { signedUrl: data?.signedUrl || null, error };
   } catch (error) {
-    // console.error("createSignedUrl error:", error.message);
     return { signedUrl: null, error };
   }
 }
@@ -206,7 +207,6 @@ async function deleteRecordingFromStorage(storagePath) {
     if (error) throw error;
     return true;
   } catch (error) {
-    // console.error("Failed to delete from storage:", error.message);
     return false;
   }
 }
@@ -215,7 +215,6 @@ async function deleteRecordingFromStorage(storagePath) {
 async function saveRecordingMetadata({ recordingId, userId, publicUrl, filename, lastTimestamp, elapsedSeconds, blob }) {
   try {
     if (!recordingId || !userId || !publicUrl || !filename || !blob) {
-      // console.error("❌ Missing required metadata:", { recordingId, userId, publicUrl, filename, blob });
       return false;
     }
 
@@ -233,14 +232,11 @@ async function saveRecordingMetadata({ recordingId, userId, publicUrl, filename,
     });
 
     if (error) {
-      // console.error("❌ Failed to insert recording metadata:", error);
       return false;
     }
 
-    // console.log("✅ Metadata inserted for recording:", recordingId);
     return true;
   } catch (e) {
-    // console.error("❌ Unexpected error in saveRecordingMetadata:", e);
     return false;
   }
 }
@@ -254,7 +250,6 @@ async function deleteRecording(recordingId, storagePath) {
     const removed = await deleteRecordingFromStorage(storagePath);
     return removed;
   } catch (e) {
-    // console.error("Failed to delete recording:", e.message);
     return false;
   }
 }
@@ -263,7 +258,6 @@ export {
   uploadRecording,
   transcribeRecording,
   fetchTranscription,
-  requestFollowUp,
   fetchFollowUpEmail,
   getLatestRecording,
   saveRecordingMetadata,
@@ -272,5 +266,6 @@ export {
   createSignedUrl,
   deleteRecordingFromStorage,
   generateUniqueId,
+  generateFollowUpEmail,
   deleteRecording // ✅ newly added
 };

@@ -11,8 +11,8 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?display=swap&family=Manrope:wght@400;500;700;800&family=Noto+Sans:wght@400;500;700;900"
     />
-    
-    <link rel="stylesheet" href="output.css" />
+
+    <link rel="stylesheet" href="../css/output.css" />
     <style>
       body {
         font-family: Manrope, "Noto Sans", sans-serif;
@@ -24,6 +24,11 @@
       <!-- Header -->
       <div class="flex items-center justify-between pb-2">
         <h2 class="text-lg font-bold tracking-[-0.015em] flex-1 text-center">Transcribe</h2>
+        <button id="menuButton" class="p-2" title="Menu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-[#0e141b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
 
       <!-- Record Button -->
@@ -47,13 +52,10 @@
         <p id="recordingTime" class="text-base font-normal hidden">00:00</p>
       </div>
 
-      <!-- Audio Preview -->
-      <div id="audioPlayer" class="my-4 hidden">
+      <!-- Audio Playback Container with Progress Bar -->
+      <div id="audioPlaybackContainer" class="my-4 hidden">
         <audio id="audioPlayback" controls class="w-full"></audio>
-      </div>
-
-      <div id="playbackControl" class="hidden my-2">
-        <audio id="pastPlayback" controls class="w-full"></audio>
+        <progress id="progressBar" value="0" max="100" class="w-full h-1 rounded-full overflow-hidden mt-2"></progress>
       </div>
 
       <!-- Loader -->
@@ -74,34 +76,23 @@
         ></textarea>
       </div>
 
-      <div id="transcriptionFullBox" class="hidden mt-4">
-        <label class="block text-base font-medium mb-2">Full Transcription</label>
-        <textarea id="transcriptionFullText" readonly class="w-full bg-white rounded-xl p-4 text-base border border-gray-300 resize-none min-h-36"></textarea>
-      </div>
-
       <!-- Action Buttons -->
       <div class="flex flex-col gap-2 mt-4">
-        <button id="saveTranscription" class="w-full h-10 rounded-full bg-[#1980e6] text-white text-sm font-bold">💾 Save</button>
+        <button id="saveTranscription" class="w-full h-10 rounded-full bg-[#1980e6] text-white text-sm font-bold hidden">💾 Save</button>
         <button id="copyBtn" class="w-full h-10 rounded-full bg-white border border-gray-300 text-[#0e141b] text-sm font-bold hidden">📋 Copy Text</button>
         <button id="gotoFollowup" disabled class="w-full h-10 rounded-full bg-[#e7edf3] text-[#0e141b] text-sm font-bold cursor-not-allowed">✉️ Generate Follow-Up</button>
       </div>
+
+      <!-- Error Box -->
+      <div id="errorBox" class="hidden text-red-500 text-sm px-4 py-2 text-center"></div>
 
       <!-- Past Recordings -->
       <h3 class="text-lg font-bold mt-8 mb-2">Past Recordings</h3>
       <div id="recordingsList" class="flex flex-col gap-4"></div>
     </div>
 
-    <template id="recordingCardTemplate">
-      <div class="bg-white border border-gray-300 rounded-xl p-4 shadow-sm relative">
-        <p class="text-sm text-gray-500 mb-2">Recording from <span class="recording-date"></span></p>
-        <audio class="w-full recording-audio" controls></audio>
-        <div class="mt-4 transcription-wrapper hidden bg-[#e7edf3] rounded-xl p-3">
-          <label class="block text-sm font-medium mb-1">Transcription</label>
-          <textarea readonly class="w-full text-sm text-[#0e141b] rounded-xl p-3 border border-gray-300 resize-none transcription-text"></textarea>
-        </div>
-      </div>
-    </template>
-
+    <script type="module" src="../js/recorder.js"></script>
+    
     <!-- Side Navigation Overlay -->
     <div id="sideNavOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
@@ -121,21 +112,9 @@
       </div>
     </div>
 
-    <script type="module" src="./js/recorder.js"></script>
-    <script>
-      const header = document.querySelector('.flex.items-center.justify-between.pb-2');
-      if (header) {
-        const menuBtn = document.createElement('button');
-        menuBtn.id = 'menuButton';
-        menuBtn.className = 'p-2';
-        menuBtn.title = 'Menu';
-        menuBtn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-[#0e141b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        `;
-        header.insertBefore(menuBtn, header.firstChild);
-      }
+    <script type="module">
+      import { SideNavManager } from "../js/modules/sideNav.js";
+      new SideNavManager();
     </script>
   </body>
 </html>
