@@ -1,4 +1,4 @@
-import { supabase, getUserId } from "./config.js";
+import { supabase, getUserId } from "./js/config.js";
 
 /**
  * Transcribes an audio file using OpenAI Whisper API
