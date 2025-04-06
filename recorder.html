@@ -12,10 +12,24 @@
       href="https://fonts.googleapis.com/css2?display=swap&family=Manrope:wght@400;500;700;800&family=Noto+Sans:wght@400;500;700;900"
     />
 
-    <link rel="stylesheet" href="/css/output.css" />
+    <!-- Updated for GitHub Pages root structure -->
+    <link rel="stylesheet" href="./css/output.css" />
     <style>
       body {
         font-family: Manrope, "Noto Sans", sans-serif;
+      }
+      .loader {
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #1980e6;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        animation: spin 0.6s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>
@@ -23,19 +37,27 @@
     <div class="w-full max-w-[480px] mx-auto flex flex-col flex-1 px-4 pb-6 pt-4">
       <!-- Header -->
       <div class="flex items-center justify-between pb-2">
-        <h2 class="text-lg font-bold tracking-[-0.015em] flex-1 text-center">Transcribe</h2>
-        <button id="menuButton" class="p-2" title="Menu">
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-[#0e141b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+        <h2 class="text-lg font-bold tracking-[-0.015em] flex-1 text-center">
+          Transcribe
+        </h2>
       </div>
 
       <!-- Record Button -->
       <div class="py-3">
-        <button id="recordToggle" class="flex items-center justify-center w-full h-12 bg-[#1980e6] text-white rounded-full font-bold text-base gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176Z" />
+        <button
+          id="recordToggle"
+          class="flex items-center justify-center w-full h-12 bg-[#1980e6] text-white rounded-full font-bold text-base gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="currentColor"
+            viewBox="0 0 256 256"
+          >
+            <path
+              d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176Z"
+            />
           </svg>
           <span>Start Recording</span>
         </button>
@@ -44,7 +66,10 @@
       <!-- Status -->
       <div class="flex items-center justify-between bg-slate-50 py-2 min-h-14 gap-4">
         <div class="flex items-center gap-4">
-          <div id="statusDot" class="size-10 rounded-lg bg-[#e7edf3] flex items-center justify-center">
+          <div
+            id="statusDot"
+            class="size-10 rounded-lg bg-[#e7edf3] flex items-center justify-center"
+          >
             <div class="size-2.5 rounded-full bg-gray-400" id="dotPulse"></div>
           </div>
           <p id="status" class="text-base font-normal">Not Recording</p>
@@ -55,14 +80,25 @@
       <!-- Audio Playback Container with Progress Bar -->
       <div id="audioPlaybackContainer" class="my-4 hidden">
         <audio id="audioPlayback" controls class="w-full"></audio>
-        <progress id="progressBar" value="0" max="100" class="w-full h-1 rounded-full overflow-hidden mt-2"></progress>
+        <progress
+          id="progressBar"
+          value="0"
+          max="100"
+          class="w-full h-1 rounded-full overflow-hidden mt-2"
+        ></progress>
       </div>
 
       <!-- Loader -->
-      <div id="loadingAnimation" class="loader hidden border-4 border-gray-200 border-l-[#1980e6] rounded-full w-8 h-8 animate-spin mx-auto mt-4"></div>
+      <div
+        id="loadingAnimation"
+        class="loader hidden mx-auto mt-4"
+      ></div>
 
       <!-- Retry Button -->
-      <button id="retryUpload" class="w-full mt-2 text-[#0e141b] bg-white border border-gray-300 rounded-full h-10 text-sm font-bold hidden">
+      <button
+        id="retryUpload"
+        class="w-full mt-2 text-[#0e141b] bg-white border border-gray-300 rounded-full h-10 text-sm font-bold hidden"
+      >
         🔄 Retry Upload
       </button>
 
@@ -78,43 +114,39 @@
 
       <!-- Action Buttons -->
       <div class="flex flex-col gap-2 mt-4">
-        <button id="saveTranscription" class="w-full h-10 rounded-full bg-[#1980e6] text-white text-sm font-bold hidden">💾 Save</button>
-        <button id="copyBtn" class="w-full h-10 rounded-full bg-white border border-gray-300 text-[#0e141b] text-sm font-bold hidden">📋 Copy Text</button>
-        <button id="gotoFollowup" disabled class="w-full h-10 rounded-full bg-[#e7edf3] text-[#0e141b] text-sm font-bold cursor-not-allowed">✉️ Generate Follow-Up</button>
+        <button
+          id="saveTranscription"
+          class="w-full h-10 rounded-full bg-[#1980e6] text-white text-sm font-bold hidden"
+        >
+          💾 Save
+        </button>
+        <button
+          id="copyBtn"
+          class="w-full h-10 rounded-full bg-white border border-gray-300 text-[#0e141b] text-sm font-bold hidden"
+        >
+          📋 Copy Text
+        </button>
+        <button
+          id="gotoFollowup"
+          disabled
+          class="w-full h-10 rounded-full bg-[#e7edf3] text-[#0e141b] text-sm font-bold cursor-not-allowed"
+        >
+          ✉️ Generate Follow-Up
+        </button>
       </div>
 
       <!-- Error Box -->
-      <div id="errorBox" class="hidden text-red-500 text-sm px-4 py-2 text-center"></div>
+      <div
+        id="errorBox"
+        class="hidden text-red-500 text-sm px-4 py-2 text-center"
+      ></div>
 
       <!-- Past Recordings -->
       <h3 class="text-lg font-bold mt-8 mb-2">Past Recordings</h3>
       <div id="recordingsList" class="flex flex-col gap-4"></div>
     </div>
 
-    <script type="module" src="/js/recorder.js"></script>
-    
-    <!-- Side Navigation Overlay -->
-    <div id="sideNavOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
-
-    <!-- Side Navigation Drawer -->
-    <div id="sideNav" class="fixed top-0 left-0 w-64 h-full bg-white z-50 shadow transform -translate-x-full transition-transform duration-300 ease-in-out p-4">
-      <div class="flex flex-col h-full">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="size-10 rounded-full bg-cover bg-center" style="background-image: url('https://cdn.usegalileo.ai/sdxl10/bbe14333-12fd-4d25-a0c2-18ad8d86d75e.png')"></div>
-          <div>
-            <p class="text-base font-bold">Your Profile</p>
-            <p id="userEmail" class="text-xs text-gray-500 truncate">Logged in</p>
-          </div>
-        </div>
-        <button id="changeInterestsBtn" class="text-left w-full px-3 py-2 rounded hover:bg-slate-100 text-[#0e141b] mb-2">🧭 Change my interests</button>
-        <button id="deleteDataBtn" class="text-left w-full px-3 py-2 rounded hover:bg-slate-100 text-red-600 mb-2">🧹 Delete all my data</button>
-        <button id="logoutBtn" class="text-left w-full px-3 py-2 rounded hover:bg-slate-100 text-[#0e141b] mt-auto">🚪 Log out</button>
-      </div>
-    </div>
-
-    <script type="module">
-      import { SideNavManager } from "/js/modules/sideNav.js";
-      new SideNavManager();
-    </script>
+    <!-- Recorder Script (root-based path) -->
+    <script type="module" src="./js/recorder.js"></script>
   </body>
 </html>

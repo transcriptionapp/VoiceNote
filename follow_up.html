@@ -11,7 +11,8 @@
       onload="this.rel='stylesheet'"
       href="https://fonts.googleapis.com/css2?display=swap&family=Manrope:wght@400;500;700;800&family=Noto+Sans:wght@400;500;700;900"
     />
-    <link rel="stylesheet" href="/css/output.css" />
+    <!-- Changed from /css/output.css to ./css/output.css -->
+    <link rel="stylesheet" href="./css/output.css" />
   </head>
   <body class="bg-slate-50 font-sans">
     <div class="min-h-screen flex flex-col overflow-x-hidden">
@@ -22,11 +23,21 @@
             onclick="window.history.back()"
             class="text-[#0e141b] rounded-full bg-white p-2 shadow hover:bg-slate-100 transition"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-              <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24px"
+              height="24px"
+              fill="currentColor"
+              viewBox="0 0 256 256"
+            >
+              <path
+                d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"
+              ></path>
             </svg>
           </button>
-          <h2 class="text-[#0e141b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
+          <h2
+            class="text-[#0e141b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center"
+          >
             Follow-Up Mail Generator
           </h2>
           <div class="w-12"></div>
@@ -44,7 +55,11 @@
       <div class="flex-grow">
         <div class="max-w-[480px] w-full mx-auto px-4 py-4">
           <label class="flex flex-col w-full">
-            <p class="text-[#0e141b] text-base font-medium leading-normal pb-2">Generated Email:</p>
+            <p
+              class="text-[#0e141b] text-base font-medium leading-normal pb-2"
+            >
+              Generated Email:
+            </p>
             <textarea
               id="emailDraft"
               placeholder="Generating your follow-up email..."
@@ -52,18 +67,29 @@
             ></textarea>
           </label>
         </div>
-        
+
         <!-- Hidden loader -->
         <div class="flex justify-center py-4">
-          <div id="loadingAnimation" class="loader hidden w-8 h-8 border-4 border-gray-200 border-l-[#1980e6] rounded-full animate-spin"></div>
+          <div
+            id="loadingAnimation"
+            class="loader hidden w-8 h-8 border-4 border-gray-200 border-l-[#1980e6] rounded-full animate-spin"
+          ></div>
         </div>
 
         <!-- Error Box -->
-        <div id="errorBox" class="hidden text-red-500 text-sm text-center px-4"></div>
+        <div
+          id="errorBox"
+          class="hidden text-red-500 text-sm text-center px-4"
+        ></div>
 
         <!-- Progress Bar for follow-up generation -->
         <div class="w-full max-w-[480px] mx-auto px-4 pb-4">
-          <progress id="followUpProgressBar" value="0" max="100" class="w-full h-2 hidden rounded-full overflow-hidden bg-gray-200"></progress>
+          <progress
+            id="followUpProgressBar"
+            value="0"
+            max="100"
+            class="w-full h-2 hidden rounded-full overflow-hidden bg-gray-200"
+          ></progress>
         </div>
       </div>
 
@@ -73,7 +99,13 @@
           id="sendViaGmail"
           class="btn-primary w-full h-12 rounded-full bg-[#1980e6] text-white font-bold text-base tracking-wide flex items-center justify-center gap-2"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="currentColor"
+            viewBox="0 0 256 256"
+          >
             <path
               d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48Zm-96,85.15L52.57,64H203.43ZM98.71,128,40,181.81V74.19Zm11.84,10.85,12,11.05a8,8,0,0,0,10.82,0l12-11.05,58,53.15H52.57ZM157.29,128,216,74.18V181.82Z"
             ></path>
@@ -81,7 +113,11 @@
           <span>Send Follow-Up via Gmail</span>
         </button>
         <div class="mt-4 hidden" id="saveFollowUpBtn">
-          <button class="w-full h-12 rounded-full bg-[#4b5563] text-white font-bold text-base">💾 Save Edits</button>
+          <button
+            class="w-full h-12 rounded-full bg-[#4b5563] text-white font-bold text-base"
+          >
+            💾 Save Edits
+          </button>
         </div>
       </div>
     </div>
@@ -89,6 +125,7 @@
     <!-- Status message output -->
     <div id="status" class="text-center py-4 text-sm text-gray-500"></div>
 
-    <script type="module" src="/js/follow_up.js"></script>
+    <!-- Updated from /js/follow_up.js to ./js/follow_up.js -->
+    <script type="module" src="./js/follow_up.js"></script>
   </body>
 </html>
