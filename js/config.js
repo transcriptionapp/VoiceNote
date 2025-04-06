@@ -1,5 +1,3 @@
-// config.js - Configuration for Supabase
-
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 // ✅ Supabase Credentials
