@@ -1,7 +1,7 @@
 import { MediaRecorderManager } from './modules/mediaRecorder.js';
 import { TranscriptionManager } from './modules/transcriptionManager.js';
 import { UIManager } from './modules/uiManager.js';
-import { getUserId, supabase } from '.js//config.js'; // Combine import from same module
+import { getUserId, supabase } from '.js/config.js'; // Combine import from same module
 import { SideNavManager } from './modules/sideNav.js';
 import { uploadRecording, saveEditedTranscription } from './api.js';
 
