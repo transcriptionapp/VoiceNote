@@ -1,7 +1,7 @@
 // Updated follow_up.js - Handling the Follow-Up Logic
 
-import { supabase, getUserId } from "../js/config.js";
-import { generateFollowUpEmail } from "../js/api.js";  // Assuming you already have this in api.js
+import { supabase, getUserId } from "/js/config.js";
+import { generateFollowUpEmail } from "/js/api.js";  // Assuming you already have this in api.js
 import { SideNavManager } from './modules/sideNav.js'; // Adjust the path based on where your sideNav.js is located
 
 const params = new URLSearchParams(window.location.search);
