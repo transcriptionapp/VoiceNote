@@ -1,4 +1,4 @@
-import { supabase } from "./config.js";
+import { supabase } from "./js/config.js";
 
 // Check if session exists and redirect immediately if logged in
 supabase.auth.getSession().then(({ data: { session } }) => {
