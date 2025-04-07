@@ -40,7 +40,23 @@
           >
             Follow-Up Mail Generator
           </h2>
-          <div class="w-12"></div>
+          <!-- Replace 'div class="w-12"' with the Menu Button -->
+          <button id="menuButton" class="p-2" title="Menu">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="size-6 text-[#0e141b]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
         </div>
 
         <!-- Subtitle -->
@@ -122,10 +138,59 @@
       </div>
     </div>
 
+    <!-- Side Navigation Overlay -->
+    <div
+      id="sideNavOverlay"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"
+    ></div>
+
+    <!-- Side Navigation Drawer -->
+    <div
+      id="sideNav"
+      class="fixed top-0 left-0 w-3/4 h-full bg-white z-50 shadow transform -translate-x-full transition-transform duration-300 ease-in-out p-4 hidden"
+    >
+      <div class="flex flex-col h-full">
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="size-10 rounded-full bg-cover bg-center"
+            style="background-image: url('https://cdn.usegalileo.ai/sdxl10/bbe14333-12fd-4d25-a0c2-18ad8d86d75e.png')"
+          ></div>
+          <div>
+            <p class="text-base font-bold">Your Profile</p>
+            <p id="userEmail" class="text-xs text-gray-500 truncate">Logged in</p>
+          </div>
+        </div>
+        <button
+          id="changeInterestsBtn"
+          class="text-left w-full px-3 py-2 rounded hover:bg-slate-100 text-[#0e141b] mb-2"
+        >
+          🧭 Change my interests
+        </button>
+        <button
+          id="deleteDataBtn"
+          class="text-left w-full px-3 py-2 rounded hover:bg-slate-100 text-red-600 mb-2"
+        >
+          🧹 Delete all my data
+        </button>
+        <button
+          id="logoutBtn"
+          class="text-left w-full px-3 py-2 rounded hover:bg-slate-100 text-[#0e141b] mt-auto"
+        >
+          🚪 Log out
+        </button>
+      </div>
+    </div>
+
     <!-- Status message output -->
     <div id="status" class="text-center py-4 text-sm text-gray-500"></div>
 
     <!-- Updated from /js/follow_up.js to ./js/follow_up.js -->
     <script type="module" src="./js/follow_up.js"></script>
+
+    <!-- Finally, initialize side nav -->
+    <script type="module">
+      import { SideNavManager } from "./js/modules/sideNav.js";
+      new SideNavManager();
+    </script>
   </body>
 </html>

@@ -22,6 +22,7 @@ export class SideNavManager {
     }
   
     toggleNav() {
+      this.sideNav.classList.toggle("hidden");
       this.sideNav.classList.toggle("translate-x-0");
       this.sideNav.classList.toggle("-translate-x-full");
       this.overlay.classList.toggle("hidden");
