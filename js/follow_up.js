@@ -31,6 +31,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (err) {
     console.error("Error generating follow-up email:", err);
     emailBox.value = "❌ Error generating follow-up email.";
+  } finally {
+    loader.style.display = "none";
   }
 
   // Gmail button logic
