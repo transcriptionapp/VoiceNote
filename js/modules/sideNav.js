@@ -3,17 +3,20 @@ export class SideNavManager {
       this.sideNav = document.getElementById("sideNav");
       this.overlay = document.getElementById("sideNavOverlay");
       this.menuButton = document.getElementById("menuButton");
-  
+
       if (!this.sideNav || !this.overlay || !this.menuButton) {
         console.warn("⚠️ SideNavManager: Missing required DOM elements.");
         return;
       }
-  
+
       this.setupEvents();
     }
   
     setupEvents() {
-      // At this point, we assume all elements exist
+      if (!this.menuButton || !this.sideNav || !this.overlay) {
+        console.warn("⚠️ SideNavManager: Missing required DOM elements.");
+        return;
+      }
       this.menuButton.addEventListener("click", () => this.toggleNav());
       this.overlay.addEventListener("click", () => this.closeNav());
     }
