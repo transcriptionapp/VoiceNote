@@ -1,5 +1,5 @@
 // api.js - Supabase API + Edge Function Handler
-import { supabase, getUserId } from "./js/config.js";
+import { supabase, getUserId } from "./config.js";
 
 function generateUniqueId() {
   return crypto.randomUUID();
