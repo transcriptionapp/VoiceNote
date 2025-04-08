@@ -1,8 +1,8 @@
-import { supabase } from '/js/config.js';
+import { supabase } from '../js/config.js';
 
 window.selectRole = async function (role) {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return window.location.href = '/index.html';
+  if (!user) return window.location.href = '../index.html';
 
   const { error } = await supabase
     .from('users')
