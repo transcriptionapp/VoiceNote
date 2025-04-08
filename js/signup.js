@@ -164,7 +164,7 @@ googleBtn?.addEventListener("click", async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/onboarding/welcome.html`,
+        redirectTo: `https://transcriptionapp.github.io/VoiceNote/onboarding/welcome.html`,
       },
     });
 
