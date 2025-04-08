@@ -1,3 +1,10 @@
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session || !session.user) {
+    window.location.href = 'signup.html';
+  }
+})();
+
 import { supabase, getUserId } from "./config.js";
 import { generateFollowUpEmail } from "./api.js";  // Assuming you already have this in api.js
 import { SideNavManager } from './modules/sideNav.js'; // Adjust the path based on where your sideNav.js is located

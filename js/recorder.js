@@ -1,7 +1,16 @@
+import { supabase } from './config.js';
+
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session || !session.user) {
+    window.location.href = 'signup.html';
+  }
+})();
+
 import { MediaRecorderManager } from './modules/mediaRecorder.js';
 import { TranscriptionManager } from './modules/transcriptionManager.js';
-import { UIManager } from './modules/uiManager.js';
-import { getUserId, supabase } from './config.js'; // Combine import from same module
+import { UIManager } from './modules/uiManager.js'; // Combine import from same module
+import { getUserId } from './config.js';
 import { SideNavManager } from './modules/sideNav.js';
 import { uploadRecording, saveEditedTranscription } from './api.js';
 
