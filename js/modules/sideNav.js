@@ -39,6 +39,45 @@ export class SideNavManager {
           }
         });
       }
+
+      const deleteBtn = document.getElementById("deleteDataBtn");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", async () => {
+          const confirmed = confirm("⚠️ This will permanently delete all your data. Are you sure?");
+          if (!confirmed) return;
+
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            alert("You must be logged in to delete data.");
+            return;
+          }
+
+          const userId = user.id;
+          const tables = [
+            "follow_ups",
+            "free_transcription_usage",
+            "recordings",
+            "transcriptions",
+            "user_profiles",
+            "users"
+          ];
+
+          try {
+            for (const table of tables) {
+              const { error } = await supabase.from(table).delete().eq("user_id", userId);
+              if (error) {
+                console.error(`Failed to delete from ${table}:`, error.message);
+              }
+            }
+            alert("✅ Your data has been deleted.");
+            await supabase.auth.signOut();
+            window.location.href = "index.html";
+          } catch (err) {
+            console.error("Deletion failed:", err);
+            alert("Failed to delete all data.");
+          }
+        });
+      }
     }
 
     toggleNav() {
