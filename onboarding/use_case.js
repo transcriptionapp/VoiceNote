@@ -2,7 +2,7 @@ import { supabase } from '../js/config.js';
 
 window.selectUseCase = async function(use_case) {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return (window.location.href = "/index.html");
+  if (!user) return (window.location.href = "../signup.html");
 
   const { error } = await supabase
     .from("users")
@@ -16,3 +16,5 @@ window.selectUseCase = async function(use_case) {
     window.location.href = "./tools.html";
   }
 };
+
+document.addEventListener('DOMContentLoaded', () => {});

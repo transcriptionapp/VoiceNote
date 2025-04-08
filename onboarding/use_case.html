@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Your Use Case</title>
   <link rel="stylesheet" href="../css/output.css" />
-  <script type="module" src="../js/config.js"></script>
 </head>
 <body class="bg-white min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
   <div class="max-w-xl w-full space-y-8 text-center">
@@ -13,35 +12,17 @@
     <p class="text-md text-gray-600">This helps us tune your setup for maximum value.</p>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-      <button class="btn-secondary" onclick="selectUseCase('Client meetings')">Client meetings</button>
-      <button class="btn-secondary" onclick="selectUseCase('Sales calls')">Sales calls</button>
-      <button class="btn-secondary" onclick="selectUseCase('Interviews')">Interviews</button>
-      <button class="btn-secondary" onclick="selectUseCase('Legal discussions')">Legal discussions</button>
-      <button class="btn-secondary" onclick="selectUseCase('Coaching sessions')">Coaching sessions</button>
-      <button class="btn-secondary" onclick="selectUseCase('Internal team syncs')">Internal team syncs</button>
-      <button class="btn-secondary col-span-1 sm:col-span-2" onclick="selectUseCase('Other')">Other</button>
+      <button class="btn-secondary py-2 px-4 rounded-md" onclick="selectUseCase('Client meetings')">Client meetings</button>
+      <button class="btn-secondary py-2 px-4 rounded-md" onclick="selectUseCase('Sales calls')">Sales calls</button>
+      <button class="btn-secondary py-2 px-4 rounded-md" onclick="selectUseCase('Interviews')">Interviews</button>
+      <button class="btn-secondary py-2 px-4 rounded-md" onclick="selectUseCase('Legal discussions')">Legal discussions</button>
+      <button class="btn-secondary py-2 px-4 rounded-md" onclick="selectUseCase('Coaching sessions')">Coaching sessions</button>
+      <button class="btn-secondary py-2 px-4 rounded-md" onclick="selectUseCase('Internal team syncs')">Internal team syncs</button>
+      <button class="btn-secondary col-span-1 sm:col-span-2 py-2 px-4 rounded-md" onclick="selectUseCase('Other')">Other</button>
     </div>
   </div>
 
-  <script type="module">
-    import { supabase } from '/config.js';
-
-    async function selectUseCase(use_case) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return alert("Not logged in");
-
-      const { error } = await supabase
-        .from("users")
-        .update({ use_case })
-        .eq("id", user.id);
-
-      if (error) {
-        console.error("Failed to update use case:", error);
-        alert("Something went wrong saving your input.");
-      } else {
-        window.location.href = "/onboarding/tools.html";
-      }
-    }
-  </script>
+  <script type="module" src="../js/config.js"></script>
+  <script type="module" src="./use_case.js"></script>
 </body>
 </html>
