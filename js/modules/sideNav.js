@@ -42,15 +42,33 @@ export class SideNavManager {
     }
 
     toggleNav() {
-      this.sideNav.classList.toggle("hidden");
-      this.sideNav.classList.toggle("translate-x-0");
-      this.sideNav.classList.toggle("-translate-x-full");
-      this.overlay.classList.toggle("hidden");
+      const isOpen = this.sideNav.classList.contains("translate-x-0");
+
+      if (isOpen) {
+        this.closeNav();
+      } else {
+        this.openNav();
+      }
+    }
+
+    openNav() {
+      this.sideNav.classList.remove("hidden");
+      this.overlay.classList.remove("hidden");
+
+      // Trigger reflow before changing transform to ensure transition runs
+      requestAnimationFrame(() => {
+        this.sideNav.classList.remove("-translate-x-full");
+        this.sideNav.classList.add("translate-x-0");
+      });
     }
 
     closeNav() {
-      this.sideNav.classList.add("-translate-x-full");
       this.sideNav.classList.remove("translate-x-0");
+      this.sideNav.classList.add("-translate-x-full");
       this.overlay.classList.add("hidden");
+
+      setTimeout(() => {
+        this.sideNav.classList.add("hidden");
+      }, 300); // duration should match your CSS transition time
     }
 }

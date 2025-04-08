@@ -1,4 +1,4 @@
-import { supabase } from '/js/config.js';
+import { supabase } from '../js/config.js';
 
 const selectedTools = new Set();
 
