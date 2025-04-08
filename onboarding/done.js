@@ -1,4 +1,4 @@
-import { supabase } from '/js/config.js';
+import { supabase } from '../js/config.js';
 
 async function buildSummary() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -42,12 +42,12 @@ async function goToApp() {
   if (error) {
     alert("Failed to finish onboarding. Try again.");
   } else {
-    window.location.href = "./recorder.html"; // Adjust path if needed
+    window.location.href = "../recorder.html"; // Adjust path if needed
   }
 }
 
 function redirectToLogin() {
-  window.location.href = "/index.html";
+  window.location.href = "../index.html";
 }
 
 // 🔥 Attach button listener + render summary
