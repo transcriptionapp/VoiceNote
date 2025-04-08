@@ -7,24 +7,22 @@
   <link rel="stylesheet" href="output.css" />
   <script type="module" src="/onboarding/tools.js"></script>
 </head>
-<body>
-  <div class="onboarding-container">
-    <div class="onboarding-content">
-      <h1 class="onboarding-headline">Where do most of your conversations happen?</h1>
-      <p class="onboarding-subtext">You can select more than one. This helps us tailor your experience.</p>
+<body class="bg-white min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+  <div class="max-w-xl w-full space-y-8 text-center">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900">Where do most of your conversations happen?</h1>
+    <p class="text-md text-gray-600">You can select more than one. This helps us tailor your experience.</p>
 
-      <div class="tools-options">
-        <button class="btn-secondary" onclick="toggleTool(this)">Mobile phone</button>
-        <button class="btn-secondary" onclick="toggleTool(this)">Desktop computer</button>
-        <button class="btn-secondary" onclick="toggleTool(this)">Zoom / Online meetings</button>
-        <button class="btn-secondary" onclick="toggleTool(this)">In-person 1:1s</button>
-        <button class="btn-secondary" onclick="toggleTool(this)">Conferences / Events</button>
-        <button class="btn-secondary" onclick="toggleTool(this)">Office meetings</button>
-        <button class="btn-secondary" onclick="toggleTool(this)">Real-estate viewings</button>
-      </div>
-
-      <button class="btn-primary onboarding-cta" onclick="submitTools()">Next →</button>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+      <button class="btn-secondary" onclick="toggleTool(this)">Mobile phone</button>
+      <button class="btn-secondary" onclick="toggleTool(this)">Desktop computer</button>
+      <button class="btn-secondary" onclick="toggleTool(this)">Zoom / Online meetings</button>
+      <button class="btn-secondary" onclick="toggleTool(this)">In-person 1:1s</button>
+      <button class="btn-secondary" onclick="toggleTool(this)">Conferences / Events</button>
+      <button class="btn-secondary" onclick="toggleTool(this)">Office meetings</button>
+      <button class="btn-secondary col-span-1 sm:col-span-2" onclick="toggleTool(this)">Real-estate viewings</button>
     </div>
+
+    <button class="btn-primary mt-6" onclick="submitTools()">Next →</button>
   </div>
 </body>
 </html>
