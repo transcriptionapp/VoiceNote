@@ -161,11 +161,14 @@ authBtn.addEventListener("click", async () => {
 
 googleBtn?.addEventListener("click", async () => {
   try {
+    const isLocalhost = window.location.hostname.includes("127.0.0.1") || window.location.hostname.includes("localhost");
+    const redirectTo = isLocalhost
+      ? "http://127.0.0.1:5500/VoiceNote/onboarding/welcome.html"
+      : "https://transcriptionapp.github.io/VoiceNote/onboarding/welcome.html";
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}${window.location.pathname.replace("signup.html", "onboarding/welcome.html")}`,
-      },
+      options: { redirectTo },
     });
 
     if (error) {
