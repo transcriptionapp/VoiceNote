@@ -31,6 +31,6 @@ window.submitTools = async () => {
     console.error("Failed to update tools:", error);
     alert("Something went wrong saving your input.");
   } else {
-    window.location.href = "language.html";
+    window.location.href = "./language.html";
   }
 };

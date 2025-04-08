@@ -13,6 +13,6 @@ window.selectUseCase = async function(use_case) {
     console.error("❌ Failed to update use case:", error);
     alert("Something went wrong saving your input.");
   } else {
-    window.location.href = "/onboarding/tools.html";
+    window.location.href = "./tools.html";
   }
 };

@@ -13,6 +13,6 @@ window.selectLanguage = async function (language) {
     console.error('Failed to update language:', error);
     alert('Something went wrong saving your language.');
   } else {
-    window.location.href = '/onboarding/done.html';
+    window.location.href = './done.html';
   }
 };

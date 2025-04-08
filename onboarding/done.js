@@ -42,7 +42,7 @@ async function goToApp() {
   if (error) {
     alert("Failed to finish onboarding. Try again.");
   } else {
-    window.location.href = "/recorder.html"; // Adjust path if needed
+    window.location.href = "./recorder.html"; // Adjust path if needed
   }
 }
 

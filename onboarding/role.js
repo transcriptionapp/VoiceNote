@@ -13,6 +13,6 @@ window.selectRole = async function (role) {
     console.error('Failed to update role:', error);
     alert('Something went wrong saving your role.');
   } else {
-    window.location.href = '/onboarding/use_case.html';
+    window.location.href = './use_case.html';
   }
 };
