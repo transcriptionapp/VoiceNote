@@ -8,10 +8,16 @@ async function buildSummary() {
     .from('users')
     .select('role, use_case, tools, language')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
-    document.getElementById('summary').textContent = "Something went wrong loading your info.";
+    const fallbackSummary = `
+      Great. You want to record high-value conversations like <strong>client calls</strong> 
+      as a <strong>professional</strong>, mostly using <strong>your phone</strong>, 
+      in <strong>English</strong>. We've set everything up to make your experience fast, 
+      relevant, and tailored to you.
+    `;
+    document.getElementById('summary').innerHTML = fallbackSummary;
     return;
   }
 

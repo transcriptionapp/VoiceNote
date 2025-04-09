@@ -22,3 +22,16 @@ function handleApiError(error, context) {
     console.error(`Error in ${context}:`, error);
     updateUI('status', `❌ Error: ${context}`);
 }
+
+// Return the correct base URL depending on environment (local or GitHub Pages)
+export function getBaseUrl() {
+    const host = window.location.hostname;
+    const isLocal = host === "127.0.0.1" || host === "localhost";
+
+    // Support for local file:// testing (e.g. file:///Users/...)
+    const isFile = window.location.protocol === "file:";
+
+    return isLocal || isFile
+        ? "http://127.0.0.1:5500/"
+        : "https://transcriptionapp.github.io/VoiceNote";
+}

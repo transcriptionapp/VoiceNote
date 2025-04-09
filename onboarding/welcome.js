@@ -5,6 +5,10 @@ import { supabase } from '../js/config.js';
   console.log("Session:", session); // optional debug line
   if (!session || !session.user) {
     window.location.href = "../signup.html";
+  } else {
+    const { id, email } = session.user;
+    const { error } = await supabase.from("users").upsert([{ id, email }], { onConflict: "id" });
+    if (error) console.error("Failed to upsert user:", error);
   }
 })();
 

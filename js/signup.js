@@ -1,4 +1,30 @@
 import { supabase } from "./config.js";
+import { getBaseUrl } from "./utils.js";
+
+// Ensure user is in `users` table after OAuth login
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === "SIGNED_IN" && session?.user) {
+    const { id, email } = session.user;
+
+    const { error } = await supabase
+      .from("users")
+      .upsert([{
+        id,
+        email,
+        subscription_status: 'active',
+        subscription_expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        credits_available: 3,
+        onboarded: false,
+        created_at: new Date().toISOString()
+      }], { onConflict: "id" });
+
+    if (error) {
+      console.error("❌ Failed to insert user after OAuth login:", error.message);
+    } else {
+      console.log("✅ User ensured in 'users' table after OAuth login");
+    }
+  }
+});
 
 // Check if session exists and redirect immediately if logged in
 supabase.auth.getSession().then(({ data: { session } }) => {
@@ -95,6 +121,7 @@ async function redirectBasedOnOnboarding(userId) {
 }
 
 authBtn.addEventListener("click", async () => {
+  console.log("🔑 Auth button clicked. Mode:", mode);
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
 
@@ -102,6 +129,8 @@ authBtn.addEventListener("click", async () => {
     showToast("⚠️ Email and password required.", "error");
     return;
   }
+  console.log("📧 Email entered:", email);
+  console.log("🔒 Password length:", password.length);
   if (!isValidEmail(email)) {
     showToast("⚠️ Please enter a valid email address.", "error");
     return;
@@ -117,17 +146,25 @@ authBtn.addEventListener("click", async () => {
 
   try {
     setLoading(true);
+    console.log("⏳ Attempting to authenticate...");
 
     if (mode === "signin") {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      console.log("🔍 Sign-in response:", { data, signInError });
       if (signInError) {
-        showToast(`❌ ${signInError.message}`, "error");
+        console.error("❌ Sign-in failed:", signInError);
+        if (signInError.status === 400) {
+          showToast("❌ No account found with this email. Please sign up first.", "error");
+        } else {
+          showToast(`❌ ${signInError.message}`, "error");
+        }
         return;
       }
       showToast("✅ Logged in! Redirecting...", "success");
       setTimeout(() => redirectBasedOnOnboarding(data?.user?.id), 1000);
     } else {
       const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+      console.log("🔍 Sign-up response:", { data, signUpError });
       if (signUpError) {
         showToast(`❌ ${signUpError.message}`, "error");
         return;
@@ -141,7 +178,17 @@ authBtn.addEventListener("click", async () => {
 
       const { error: insertError } = await supabase
         .from("users")
-        .upsert([{ id: userId, email }], { onConflict: "id" });
+        .upsert([{
+          id: userId,
+          email,
+          subscription_status: 'active',
+          subscription_expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          credits_available: 3,
+          onboarded: false,
+          created_at: new Date().toISOString()
+        }], { onConflict: "id" });
+
+      console.log("📥 Insert result (users):", insertError);
 
       if (insertError) {
         showToast(`⚠️ Auth succeeded, DB insert failed: ${insertError.message}`, "error");
@@ -160,11 +207,9 @@ authBtn.addEventListener("click", async () => {
 });
 
 googleBtn?.addEventListener("click", async () => {
+  console.log("🔐 Google sign-in button clicked.");
   try {
-    const isLocalhost = window.location.hostname.includes("127.0.0.1") || window.location.hostname.includes("localhost");
-    const redirectTo = isLocalhost
-      ? "http://127.0.0.1:5500/VoiceNote/onboarding/welcome.html"
-      : "https://transcriptionapp.github.io/VoiceNote/onboarding/welcome.html";
+    const redirectTo = `${getBaseUrl()}/onboarding/welcome.html`;
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",

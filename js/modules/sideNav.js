@@ -41,7 +41,8 @@ export class SideNavManager {
       }
 
       const deleteBtn = document.getElementById("deleteDataBtn");
-      if (deleteBtn) {
+      if (deleteBtn && !this.deleteSetup) {
+        this.deleteSetup = true;
         deleteBtn.addEventListener("click", async () => {
           const confirmed = confirm("⚠️ This will permanently delete all your data. Are you sure?");
           if (!confirmed) return;
