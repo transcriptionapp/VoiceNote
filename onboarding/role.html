@@ -2,24 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Your Role</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Select Role</title>
   <link rel="stylesheet" href="../css/output.css" />
-  <script type="module" src="./role.js"></script>
-</head>
-<body class="bg-white min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-  <div class="max-w-xl w-full space-y-8 text-center">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900">Who are you building conversations with?</h1>
-    <p class="text-md text-gray-600">We'll tailor your experience to your field—so your recordings, summaries, and follow-ups are always relevant.</p>
+  <script type="module">
+    import { supabase } from '../js/config.js';
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-      <button class="btn-secondary" onclick="selectRole('Consultant')">Consultant</button>
-      <button class="btn-secondary" onclick="selectRole('Salesperson')">Salesperson</button>
-      <button class="btn-secondary" onclick="selectRole('Recruiter')">Recruiter</button>
-      <button class="btn-secondary" onclick="selectRole('Lawyer')">Lawyer</button>
-      <button class="btn-secondary" onclick="selectRole('Real-Estate Agent')">Real-Estate Agent</button>
-      <button class="btn-secondary" onclick="selectRole('Coach')">Coach</button>
-      <button class="btn-secondary col-span-1 sm:col-span-2" onclick="selectRole('Other')">Other</button>
+    document.addEventListener('DOMContentLoaded', () => {
+      const roleButtons = document.querySelectorAll('.role-item');
+      roleButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+          const role = button.dataset.role;
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return window.location.href = '../index.html';
+
+          const { error } = await supabase
+            .from('users')
+            .update({ role })
+            .eq('id', user.id);
+
+          if (error) {
+            console.error('Failed to update role:', error);
+            alert('Something went wrong saving your role.');
+          } else {
+            window.location.href = './use_case.html';
+          }
+        });
+      });
+    });
+  </script>
+</head>
+<body class="min-h-screen bg-white flex items-center justify-center px-4 sm:px-6 lg:px-8">
+  <div class="max-w-2xl w-full space-y-8">
+    <div class="onboarding-content">
+      <h1 class="text-2xl font-bold text-gray-900 text-center">
+        What best describes your role?
+      </h1>
+      <div class="mt-6 space-y-4">
+        <button class="btn-primary w-full role-item" data-role="consultant">Consultant</button>
+        <button class="btn-primary w-full role-item" data-role="recruiter">Recruiter</button>
+        <button class="btn-primary w-full role-item" data-role="lawyer">Lawyer</button>
+        <button class="btn-primary w-full role-item" data-role="other">Other</button>
+      </div>
     </div>
   </div>
 </body>
