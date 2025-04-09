@@ -23,6 +23,16 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     } else {
       console.log("✅ User ensured in 'users' table after OAuth login");
     }
+
+    const { error: profileError } = await supabase
+      .from("user_profiles")
+      .upsert([{ user_id: id, tier: "user", admin: false }], { onConflict: "user_id" });
+
+    if (profileError) {
+      console.error("❌ Failed to insert user profile after OAuth login:", profileError.message);
+    } else {
+      console.log("✅ User profile ensured in 'user_profiles' table after OAuth login");
+    }
   }
 });
 
@@ -125,6 +135,9 @@ authBtn.addEventListener("click", async () => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
 
+  const { data: sessionData } = await supabase.auth.getSession();
+  console.log("📦 Existing session data:", sessionData);
+
   if (!email || !password) {
     showToast("⚠️ Email and password required.", "error");
     return;
@@ -136,7 +149,6 @@ authBtn.addEventListener("click", async () => {
     return;
   }
 
-  const { data: sessionData } = await supabase.auth.getSession();
   const alreadySignedIn = sessionData?.session?.user;
 
   if (mode === "signup" && alreadySignedIn) {
@@ -146,11 +158,13 @@ authBtn.addEventListener("click", async () => {
 
   try {
     setLoading(true);
+    console.log("🟡 setLoading(true) triggered");
     console.log("⏳ Attempting to authenticate...");
 
     if (mode === "signin") {
       console.log("🔄 Sign-in flow started");
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      console.log("🧾 Supabase signIn response:", { data, signInError });
       console.log("🔍 Sign-in response:", { data, signInError });
       if (signInError) {
         console.error("❌ Sign-in failed:", signInError);
@@ -166,7 +180,7 @@ authBtn.addEventListener("click", async () => {
     } else {
       console.log("🆕 Sign-up flow started");
       const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
-      console.log("🔍 Sign-up response:", { data, signUpError });
+      console.log("🧾 Supabase signUp response:", { data, signUpError });
       if (signUpError) {
         showToast(`❌ ${signUpError.message}`, "error");
         return;
