@@ -15,8 +15,11 @@ import { supabase } from '../js/config.js';
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-button');
   if (startBtn) {
-    startBtn.addEventListener('click', () => {
+    // Support both click and touchstart to cover iOS Safari & Chrome
+    const handler = () => {
       window.location.href = './role.html';
-    });
+    };
+    startBtn.addEventListener('click', handler);
+    startBtn.addEventListener('touchstart', handler);
   }
 });
