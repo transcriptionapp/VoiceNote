@@ -1,4 +1,4 @@
-import { supabase } from '/js/config.js';
+import { supabase } from '../js/config.js';
 
 window.selectLanguage = async function (language) {
   const { data: { user } } = await supabase.auth.getUser();
