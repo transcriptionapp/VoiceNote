@@ -196,15 +196,15 @@ authBtn.addEventListener("click", async () => {
         showToast(`⚠️ Auth succeeded, DB insert failed: ${insertError.message}`, "error");
         return;
       }
-
-      const { error: profileError } = await supabase
+      
+      const { error: profileInsertError } = await supabase
         .from("user_profiles")
         .upsert([{ user_id: userId, tier: "user", admin: false }], { onConflict: "user_id" });
 
-      if (profileError) {
-        console.error("⚠️ Failed to insert into user_profiles:", profileError.message);
+      if (profileInsertError) {
+        console.error("⚠️ Failed to insert into user_profiles:", profileInsertError.message);
       } else {
-        console.log("✅ User profile created");
+        console.log("✅ User profile created in 'user_profiles' table");
       }
 
       showToast("✅ Account created! Redirecting...", "success");
