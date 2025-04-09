@@ -13,8 +13,14 @@ window.selectUseCase = async function(use_case) {
     console.error("❌ Failed to update use case:", error);
     alert("Something went wrong saving your input.");
   } else {
-    window.location.href = "./tools.html";
+    // Ensure navigation works on all browsers including iOS
+    window.location.assign("./tools.html");
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {});
+document.addEventListener('DOMContentLoaded', () => {
+  // Force type="button" on all buttons to prevent form submit issues on iOS Safari
+  document.querySelectorAll("button").forEach(btn => {
+    btn.setAttribute("type", "button");
+  });
+});

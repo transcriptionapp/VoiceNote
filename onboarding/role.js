@@ -15,6 +15,8 @@ window.addEventListener('pageshow', (event) => {
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll("button").forEach(btn => btn.setAttribute("type", "button"));
+
   const roleItems = document.querySelectorAll('.role-item');
 
   roleItems.forEach((item) => {

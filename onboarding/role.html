@@ -8,7 +8,8 @@
   <script type="module">
     import { supabase } from '../js/config.js';
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll("button").forEach(btn => btn.setAttribute("type", "button"));
       const roleButtons = document.querySelectorAll('.role-item');
       roleButtons.forEach(button => {
         button.addEventListener('click', async () => {
@@ -39,10 +40,10 @@
         What best describes your role?
       </h1>
       <div class="mt-6 space-y-4">
-        <button class="btn-primary w-full role-item" data-role="consultant">Consultant</button>
-        <button class="btn-primary w-full role-item" data-role="recruiter">Recruiter</button>
-        <button class="btn-primary w-full role-item" data-role="lawyer">Lawyer</button>
-        <button class="btn-primary w-full role-item" data-role="other">Other</button>
+        <button type="button" class="btn-primary w-full role-item" data-role="consultant">Consultant</button>
+        <button type="button" class="btn-primary w-full role-item" data-role="recruiter">Recruiter</button>
+        <button type="button" class="btn-primary w-full role-item" data-role="lawyer">Lawyer</button>
+        <button type="button" class="btn-primary w-full role-item" data-role="other">Other</button>
       </div>
     </div>
   </div>

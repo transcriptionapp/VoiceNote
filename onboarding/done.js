@@ -56,6 +56,8 @@ function redirectToLogin() {
   window.location.href = "../index.html";
 }
 
-// 🔥 Attach button listener + render summary
-document.getElementById("start-btn").addEventListener("click", goToApp);
-buildSummary();
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("button").forEach(btn => btn.setAttribute("type", "button"));
+  document.getElementById("start-btn").addEventListener("click", goToApp);
+  buildSummary();
+});
