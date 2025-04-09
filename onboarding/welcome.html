@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Welcome</title>
   <link rel="stylesheet" href="../css/output.css" />
-  <script type="module" src="./welcome.js"></script>
+  <script type="module" src="./welcome.js" defer></script>
 </head>
 <body class="min-h-screen bg-white flex items-center justify-center px-4 sm:px-6 lg:px-8">
   <div class="max-w-2xl w-full space-y-8">
@@ -16,8 +16,16 @@
       <p class="mt-4 text-lg text-gray-600 text-center">
         Whether you're meeting a client face-to-face, talking on the phone, or attending a conference—this app lets you record important conversations, get accurate transcriptions, and generate polished follow-ups instantly. Your notes stay organized, searchable, and secure.
       </p>
-      <button class="btn-primary w-full mt-6" id="start-button">Let’s Get Started →</button>
+      <button type="button" class="btn-primary w-full mt-6" id="start-button">Let’s Get Started →</button>
     </div>
   </div>
+  <script>
+    // Ensure reliable navigation on iOS mobile browsers
+    document.getElementById("start-button")?.addEventListener("click", () => {
+      setTimeout(() => {
+        window.location.href = "./role.html";
+      }, 0);
+    });
+  </script>
 </body>
 </html>
