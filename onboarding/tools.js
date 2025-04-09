@@ -1,8 +1,10 @@
 import { supabase } from '../js/config.js';
 
 const selectedTools = new Set();
+let isSubmitting = false;
 
-window.toggleTool = (button) => {
+// Enhance toggleTool to support both click and touch
+function toggleTool(button) {
   const value = button.innerText;
   if (selectedTools.has(value)) {
     selectedTools.delete(value);
@@ -11,30 +13,62 @@ window.toggleTool = (button) => {
     selectedTools.add(value);
     button.classList.add('selected');
   }
-};
+}
 
+// Ensure all buttons behave consistently across devices
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("button").forEach(btn => btn.setAttribute("type", "button"));
+  document.querySelectorAll("button").forEach(btn => {
+    btn.setAttribute("type", "button");
+
+    // Add support for both click and touchstart (especially for iOS Safari)
+    if (btn.matches(".btn-secondary")) {
+      btn.addEventListener("click", () => toggleTool(btn));
+      btn.addEventListener("touchstart", () => toggleTool(btn));
+    }
+
+    if (btn.id === "submit-tools") {
+      btn.addEventListener("click", submitTools);
+      btn.addEventListener("touchstart", submitTools);
+    }
+  });
 });
 
-window.submitTools = async () => {
+// Safe & robust submit function
+async function submitTools() {
+  if (isSubmitting) return; // prevent double submit
+  isSubmitting = true;
+
   if (selectedTools.size === 0) {
-    return alert("Please select at least one option.");
+    alert("Please select at least one option.");
+    isSubmitting = false;
+    return;
   }
 
-  const tools = Array.from(selectedTools).join(', ');
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return window.location.href = "../signup.html";
+  try {
+    const tools = Array.from(selectedTools).join(', ');
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  const { error } = await supabase
-    .from("users")
-    .update({ tools })
-    .eq("id", user.id);
+    if (authError || !user) {
+      console.warn("User not found:", authError);
+      window.location.href = "../signup.html";
+      return;
+    }
 
-  if (error) {
-    console.error("Failed to update tools:", error);
-    alert("Something went wrong saving your input.");
-  } else {
-    window.location.href = "./language.html";
+    const { error } = await supabase
+      .from("users")
+      .update({ tools })
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("Failed to update tools:", error);
+      alert("Something went wrong saving your input.");
+    } else {
+      window.location.href = "./language.html";
+    }
+  } catch (err) {
+    console.error("Unexpected error in submitTools:", err);
+    alert("Unexpected error occurred.");
+  } finally {
+    isSubmitting = false;
   }
-};
+}
