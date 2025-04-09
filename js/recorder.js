@@ -26,6 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const sideNavManager = new SideNavManager();
   sideNavManager.setupEvents();
 
+  // Initial setup of the Follow-up generation button (disable and add tooltip)
+  const followupBtn = document.getElementById("gotoFollowup");
+  followupBtn.disabled = true;
+  followupBtn.title = "Create a recording first and wait until transcribed to generate follow up";
+
   // Handle start/stop recording
   document.getElementById("recordToggle").addEventListener("click", () => {
     if (mediaRecorderManager.isRecording) {
@@ -56,6 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
         originalTranscript = transcription;
         uiManager.updateTranscription(transcription);
         uiManager.updateFollowUpButton(true);
+        followupBtn.disabled = false;
+        followupBtn.removeAttribute("title");
         uiManager.hideLoading();
       } else {
         uiManager.showError("Transcription failed");
