@@ -13,6 +13,10 @@ window.toggleTool = (button) => {
   }
 };
 
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("button").forEach(btn => btn.setAttribute("type", "button"));
+});
+
 window.submitTools = async () => {
   if (selectedTools.size === 0) {
     return alert("Please select at least one option.");
