@@ -12,14 +12,24 @@ export class MediaRecorderManager {
   async startRecording() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.mediaRecorder = new MediaRecorder(stream);
+      let options = {};
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported('audio/mp4')) {
+        options.mimeType = 'audio/mp4';
+      } else if (window.MediaRecorder && MediaRecorder.isTypeSupported('audio/webm')) {
+        options.mimeType = 'audio/webm';
+      }
+
+      console.log("Using mime type:", options.mimeType || "default");
+
+      this.mediaRecorder = new MediaRecorder(stream, options);
 
       this.mediaRecorder.ondataavailable = (event) => this.audioChunks.push(event.data);
       this.mediaRecorder.start();
       this.isRecording = true;
 
       this.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: "audio/webm" });
+        const finalMime = options.mimeType || 'audio/webm';
+        const audioBlob = new Blob(this.audioChunks, { type: finalMime });
         this.audioChunks = [];
         this.dispatchEvent('recordingStopped', audioBlob);
       };
