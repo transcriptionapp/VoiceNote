@@ -149,6 +149,7 @@ authBtn.addEventListener("click", async () => {
     console.log("⏳ Attempting to authenticate...");
 
     if (mode === "signin") {
+      console.log("🔄 Sign-in flow started");
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       console.log("🔍 Sign-in response:", { data, signInError });
       if (signInError) {
@@ -163,6 +164,7 @@ authBtn.addEventListener("click", async () => {
       showToast("✅ Logged in! Redirecting...", "success");
       setTimeout(() => redirectBasedOnOnboarding(data?.user?.id), 1000);
     } else {
+      console.log("🆕 Sign-up flow started");
       const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
       console.log("🔍 Sign-up response:", { data, signUpError });
       if (signUpError) {
@@ -195,11 +197,21 @@ authBtn.addEventListener("click", async () => {
         return;
       }
 
+      const { error: profileError } = await supabase
+        .from("user_profiles")
+        .upsert([{ user_id: userId, tier: "user", admin: false }], { onConflict: "user_id" });
+
+      if (profileError) {
+        console.error("⚠️ Failed to insert into user_profiles:", profileError.message);
+      } else {
+        console.log("✅ User profile created");
+      }
+
       showToast("✅ Account created! Redirecting...", "success");
       setTimeout(() => redirectBasedOnOnboarding(userId), 1000);
     }
   } catch (err) {
-    console.error("Unexpected error:", err);
+    console.error("🔥 Unexpected error in auth flow:", err);
     showToast("❌ Something went wrong.", "error");
   } finally {
     setLoading(false);
