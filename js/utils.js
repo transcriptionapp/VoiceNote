@@ -27,11 +27,12 @@ function handleApiError(error, context) {
 export function getBaseUrl() {
     const host = window.location.hostname;
     const isLocal = host === "127.0.0.1" || host === "localhost";
-
-    // Support for local file:// testing (e.g. file:///Users/...)
     const isFile = window.location.protocol === "file:";
 
-    return isLocal || isFile
-        ? "http://127.0.0.1:5500/"
-        : "https://transcriptionapp.github.io/VoiceNote";
+    if (isLocal || isFile) {
+        return "http://127.0.0.1:5500";
+    } else {
+        const repoName = window.location.pathname.split('/')[1];
+        return `https://${host}/${repoName}`;
+    }
 }
