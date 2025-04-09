@@ -1,5 +1,12 @@
 import { supabase } from '../js/config.js';
 
+// Reload on iOS/Safari BFCache restore
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
+
 (async () => {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session || !session.user) {
@@ -13,8 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
   roleItems.forEach((item) => {
     const role = item.getAttribute('data-role');
 
-    const handler = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+    const handler = async (event) => {
+      event.preventDefault(); // prevent double-triggers
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return window.location.href = '../index.html';
 
       const { error } = await supabase
@@ -30,7 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
+    // Avoid duplicate handlers
+    item.removeEventListener('click', handler);
+    item.removeEventListener('touchstart', handler);
     item.addEventListener('click', handler);
-    item.addEventListener('touchstart', handler); // for iOS Safari/Chrome
+    item.addEventListener('touchstart', handler);
   });
 });
