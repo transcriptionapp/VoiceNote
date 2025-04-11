@@ -310,15 +310,25 @@ function createRecordingItem(recording) {
 
   // Add event listeners to the audio element for Safari compatibility
   const audioElement = audioSection.querySelector('audio');
-  audioElement.addEventListener('play', () => {
-    // Ensure audio context is initialized on user interaction (required for Safari)
+  
+  // Initialize audio context on user interaction (required for Safari)
+  const initAudioContext = () => {
     if (window.AudioContext || window.webkitAudioContext) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!window.audioContext) {
         window.audioContext = new AudioContext();
+        // Resume the audio context if it's suspended (required for iOS)
+        if (window.audioContext.state === 'suspended') {
+          window.audioContext.resume();
+        }
       }
     }
-  });
+  };
+  
+  // Add event listeners for all possible user interactions
+  audioElement.addEventListener('play', initAudioContext);
+  audioElement.addEventListener('click', initAudioContext);
+  audioElement.addEventListener('touchstart', initAudioContext);
   
   // Add error handling for audio playback
   audioElement.addEventListener('error', (e) => {
@@ -330,6 +340,32 @@ function createRecordingItem(recording) {
       audioElement.src = currentSrc;
     }, 100);
   });
+  
+  // Add a custom play button for mobile Safari
+  const playButtonMobile = document.createElement('button');
+  playButtonMobile.className = 'mobile-play-button bg-blue-500 text-white px-4 py-2 rounded mt-2';
+  playButtonMobile.textContent = 'Play Audio';
+  playButtonMobile.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    initAudioContext();
+    
+    // Force play on mobile
+    const playPromise = audioElement.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        console.error('Playback failed:', error);
+        // Try alternative playback method
+        audioElement.currentTime = 0;
+        setTimeout(() => {
+          audioElement.play().catch(e => console.error('Second playback attempt failed:', e));
+        }, 100);
+      });
+    }
+  });
+  
+  // Add the play button after the audio element
+  audioElement.parentNode.appendChild(playButtonMobile);
 
   const followUpSection = document.createElement('div');
   followUpSection.className = 'collapsible-section hidden';
@@ -356,15 +392,43 @@ function togglePlayback(recording) {
   const item = document.querySelector(`[data-id="${recording.id}"]`);
   const audioSection = item.querySelector('.collapsible-section');
   const followUpSection = item.querySelectorAll('.collapsible-section')[1];
+  const audioElement = audioSection.querySelector('audio');
+  const playButton = audioSection.querySelector('.mobile-play-button');
 
   if (audioSection.classList.contains('hidden')) {
     audioSection.classList.remove('hidden');
     audioSection.classList.add('visible');
     followUpSection.classList.remove('visible');
     followUpSection.classList.add('hidden');
+    
+    // For mobile devices, we need to ensure the audio context is initialized
+    if (window.AudioContext || window.webkitAudioContext) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!window.audioContext) {
+        window.audioContext = new AudioContext();
+      }
+      
+      // Resume the audio context if it's suspended (required for iOS)
+      if (window.audioContext.state === 'suspended') {
+        window.audioContext.resume();
+      }
+    }
+    
+    // Preload the audio for mobile devices
+    audioElement.load();
+    
+    // Show the custom play button on mobile devices
+    if (playButton) {
+      playButton.style.display = 'block';
+    }
   } else {
     audioSection.classList.remove('visible');
     audioSection.classList.add('hidden');
+    
+    // Pause the audio when hiding the section
+    if (audioElement) {
+      audioElement.pause();
+    }
   }
 }
 

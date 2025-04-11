@@ -49,6 +49,9 @@ export class TranscriptionManager {
     try {
       // Check if we're on Safari
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      console.log("📱 Device info:", { isSafari, isMobile, mimeType: audioBlob.type });
       
       // If it's already an MP3 or we're on Safari with a compatible format, return as is
       if (audioBlob.type === 'audio/mpeg' || 
@@ -57,6 +60,46 @@ export class TranscriptionManager {
         return audioBlob;
       }
 
+      // For mobile Safari, we need to be more careful with audio processing
+      if (isSafari && isMobile) {
+        console.log("📱 Mobile Safari detected, using simplified audio processing");
+        
+        // Create an audio context with mobile-friendly settings
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)({
+          sampleRate: 44100,
+          latencyHint: 'interactive'
+        });
+        
+        // Convert blob to array buffer
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        
+        // Decode the audio data
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+        // Create a simpler offline context for mobile
+        const offlineContext = new OfflineAudioContext(
+          1, // Mono audio for better compatibility
+          audioBuffer.length,
+          44100 // Standard sample rate
+        );
+        
+        // Create a source node
+        const source = offlineContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(offlineContext.destination);
+        
+        // Start processing
+        source.start(0);
+        const renderedBuffer = await offlineContext.startRendering();
+        
+        // Convert to WAV format (more widely supported)
+        const wavBlob = await this._audioBufferToWav(renderedBuffer);
+        
+        console.log("✅ Converted audio to WAV format for mobile Safari");
+        return wavBlob;
+      }
+
+      // Standard processing for other browsers
       // Create an audio context
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       
@@ -94,55 +137,69 @@ export class TranscriptionManager {
     }
   }
 
-  _audioBufferToWav(buffer) {
-    const numChannels = buffer.numberOfChannels;
-    const sampleRate = buffer.sampleRate;
-    const format = 1; // PCM
-    const bitDepth = 16;
-    
-    const bytesPerSample = bitDepth / 8;
-    const blockAlign = numChannels * bytesPerSample;
-    
-    const wav = new ArrayBuffer(44 + buffer.length * blockAlign);
-    const view = new DataView(wav);
-    
-    // Write WAV header
-    const writeString = (offset, string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
+  async _audioBufferToWav(audioBuffer) {
+    try {
+      // Create a WAV file with mobile-friendly settings
+      const numOfChannels = 1; // Mono audio for better compatibility
+      const sampleRate = 44100; // Standard sample rate
+      const bitsPerSample = 16; // 16-bit audio
+      const bytesPerSample = bitsPerSample / 8;
+      const blockAlign = numOfChannels * bytesPerSample;
+      const byteRate = sampleRate * blockAlign;
+      
+      // Get the audio data
+      const channelData = audioBuffer.getChannelData(0); // Get first channel for mono
+      const buffer = new ArrayBuffer(44 + channelData.length * bytesPerSample);
+      const view = new DataView(buffer);
+      
+      // Write WAV header
+      // "RIFF" chunk descriptor
+      this._writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + channelData.length * bytesPerSample, true);
+      this._writeString(view, 8, 'WAVE');
+      
+      // "fmt " sub-chunk
+      this._writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+      view.setUint16(20, 1, true); // AudioFormat (1 for PCM)
+      view.setUint16(22, numOfChannels, true); // NumChannels
+      view.setUint32(24, sampleRate, true); // SampleRate
+      view.setUint32(28, byteRate, true); // ByteRate
+      view.setUint16(32, blockAlign, true); // BlockAlign
+      view.setUint16(34, bitsPerSample, true); // BitsPerSample
+      
+      // "data" sub-chunk
+      this._writeString(view, 36, 'data');
+      view.setUint32(40, channelData.length * bytesPerSample, true);
+      
+      // Write the audio data
+      const offset = 44;
+      for (let i = 0; i < channelData.length; i++) {
+        const sample = Math.max(-1, Math.min(1, channelData[i]));
+        view.setInt16(offset + i * bytesPerSample, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
       }
-    };
-    
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36 + buffer.length * blockAlign, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, format, true);
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * blockAlign, true);
-    view.setUint16(32, blockAlign, true);
-    view.setUint16(34, bitDepth, true);
-    writeString(36, 'data');
-    view.setUint32(40, buffer.length * blockAlign, true);
-    
-    // Write audio data
-    const offset = 44;
-    const channelData = [];
-    for (let i = 0; i < numChannels; i++) {
-      channelData[i] = buffer.getChannelData(i);
+      
+      // Create blob with explicit MIME type
+      const blob = new Blob([buffer], { type: 'audio/wav' });
+      console.log("✅ Created WAV file:", { 
+        size: blob.size, 
+        type: blob.type,
+        sampleRate,
+        numOfChannels,
+        bitsPerSample
+      });
+      
+      return blob;
+    } catch (error) {
+      console.error("❌ Error creating WAV file:", error);
+      throw error;
     }
-    
-    for (let i = 0; i < buffer.length; i++) {
-      for (let channel = 0; channel < numChannels; channel++) {
-        const sample = Math.max(-1, Math.min(1, channelData[channel][i]));
-        const value = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
-        view.setInt16(offset + (i * blockAlign) + (channel * bytesPerSample), value, true);
-      }
+  }
+  
+  _writeString(view, offset, string) {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
     }
-    
-    return new Blob([wav], { type: 'audio/wav' });
   }
 
   async uploadRecording(audioBlob, metadata) {
