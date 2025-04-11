@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Page Not Found</title>
+  <script>
+    // Single Page Apps for GitHub Pages
+    // MIT License
+    // https://github.com/rafgraph/spa-github-pages
+    (function(l) {
+      if (l.search[1] === '/') {
+        var decoded = l.search.slice(1).split('&').map(function(s) { 
+          return s.replace(/~and~/g, '&')
+        }).join('?');
+        window.history.replaceState(null, null,
+          l.pathname.slice(0, -1) + decoded + l.hash
+        );
+      }
+    }(window.location));
+
+    // Handle GitHub Pages base path
+    const segments = window.location.pathname.split('/');
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    const basePath = isGitHubPages ? '/VoiceNote' : '';
+    
+    // If we're on GitHub Pages and not at the base path, redirect
+    if (isGitHubPages && !window.location.pathname.startsWith(basePath)) {
+      window.location.href = basePath + window.location.pathname;
+    } else {
+      // Otherwise, redirect to the home page
+      window.location.href = basePath + '/index.html';
+    }
+  </script>
+</head>
+<body>
+  <h1>Redirecting...</h1>
+</body>
+</html> 

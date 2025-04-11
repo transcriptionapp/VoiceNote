@@ -1,43 +1,36 @@
-import { supabase, getUserId } from "./js/config.js";
+import { supabase } from "./modules/auth.js";
 
 /**
- * Transcribes an audio file using OpenAI Whisper API
- * @param {Object} params - Parameters for transcription
- * @param {string} params.recordingId - Related recording UUID
- * @param {string} params.storage_path - URL of the uploaded audio file
- * @param {string} params.userId - User ID of the authenticated user
+ * Transcribes an audio file using OpenAI Whisper API via Edge Function
+ * @param {string} recordingId - Related recording UUID
+ * @param {string} storage_path - URL of the uploaded audio file
+ * @param {string} userId - User ID of the authenticated user
  * @returns {Promise<string|null>} Transcribed text or null
  */
-export async function transcribeAudio(params) {
-  const { recordingId, storage_path, userId } = params;
-  console.log("📞 transcribeAudio function called with:", { recordingId, storage_path });
-
+export async function transcribeAudio(recordingId, storage_path, userId) {
   try {
-    console.log("🙋‍♂️ Using provided userId:", userId);
-    if (!userId) throw new Error("User not authenticated");
+    // Get the session and access token
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!session) throw new Error('No active session');
+    const accessToken = session.access_token;
 
-    const { data: { session } } = await supabase.auth.getSession();
-    const accessToken = session?.access_token;
-    console.log("🔐 Access token retrieved:", accessToken ? "✅ Present" : "❌ Missing");
-    if (!accessToken) throw new Error("No access token available");
-
-    const requestBody = {
+    // Prepare the request body
+    const body = {
       recording_id: recordingId,
-      storage_path,
+      storage_path: storage_path,
       user_id: userId
     };
 
-    console.log("🚀 Preparing transcription request with:", requestBody);
-    console.log("📤 Calling Edge Function /transcribe-audio with payload:", requestBody);
-
-    console.log("📡 Sending transcription request to:", "https://fxuafoiuwzsjezuqzjgn.functions.supabase.co/transcribe-audio");
-    const response = await fetch("https://fxuafoiuwzsjezuqzjgn.functions.supabase.co/transcribe-audio", {
+    console.log("📤 Calling Edge Function /transcribe-audio with payload:", body);
+    
+    const response = await fetch("https://fxuafoiuwzsjezuqzjgn.supabase.co/functions/v1/transcribe-audio", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`
+        "Authorization": `Bearer ${accessToken}`
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(body)
     });
 
     console.log("📥 Edge Function response status:", response.status);
@@ -49,14 +42,10 @@ export async function transcribeAudio(params) {
     }
 
     const result = await response.json();
-    console.log("📝 Full transcription response JSON:", result);
-    console.log("📄 Transcription result text:", result.text);
     console.log("✅ Transcription result:", result);
-
-    return result.text || null;
-
+    return result;
   } catch (error) {
-    console.error("❌ Transcription error:", error);
-    return null;
+    console.error("❌ Transcription failed:", error);
+    throw error;
   }
 }

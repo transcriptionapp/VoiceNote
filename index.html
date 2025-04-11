@@ -90,6 +90,7 @@
           placeholder="Email address"
           class="form-input bg-[#e7edf3] rounded-xl h-14 p-4 text-base text-[#0e141b] placeholder:text-[#4e7397] focus:outline-none border-none"
         />
+        <div id="emailError" class="text-red-500 text-sm hidden"></div>
       </div>
 
       <!-- Password -->
@@ -101,6 +102,7 @@
           placeholder="Password"
           class="form-input bg-[#e7edf3] rounded-xl h-14 p-4 text-base text-[#0e141b] placeholder:text-[#4e7397] focus:outline-none border-none"
         />
+        <div id="passwordError" class="text-red-500 text-sm hidden"></div>
       </div>
 
       <!-- Auth Button -->
@@ -125,6 +127,18 @@
 
     <!-- Adjusted to root-based reference for signup.js -->
     <script type="module" src="./js/signup.js"></script>
+    
+    <!-- Debug tools for authentication -->
+    <script type="module" src="./js/debug-auth.js"></script>
+
+    <!-- Authentication fix tool -->
+    <script type="module" src="./js/fix-auth.js"></script>
+
+    <!-- CORS test tool -->
+    <script type="module" src="./js/test-cors.js"></script>
+    
+    <!-- Comprehensive authentication test tool -->
+    <script type="module" src="./js/auth-test.js"></script>
 
   </body>
 </html>

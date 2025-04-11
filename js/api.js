@@ -1,5 +1,5 @@
 // api.js - Supabase API + Edge Function Handler
-import { supabase, getUserId } from "./config.js";
+import { supabase } from "./modules/auth.js";
 
 function generateUniqueId() {
   return crypto.randomUUID();
@@ -8,12 +8,11 @@ function generateUniqueId() {
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 async function verifyAuth() {
-  const userId = await getUserId();
-  if (!userId) {
-    const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.id) {
     throw new Error("Not authenticated");
   }
-  return userId;
+  return user.id;
 }
 
 async function uploadRecording(audioBlob, filename, recordingId) {
@@ -72,24 +71,46 @@ async function uploadRecording(audioBlob, filename, recordingId) {
 }
 
 // ✅ NEW: Transcribe via Edge Function
-async function transcribeRecording(recordingId) {
+export async function transcribeRecording(recordingId, storage_path, userId) {
   try {
-    const userId = await verifyAuth();
-    const response = await fetch(`/functions/v1/transcribe-audio`, {
+    // Get the session and access token
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!session) throw new Error('No active session');
+    const accessToken = session.access_token;
+
+    // Prepare the request body
+    const body = {
+      recording_id: recordingId,
+      storage_path: storage_path,
+      user_id: userId
+    };
+
+    console.log("📤 Calling Edge Function /transcribe-audio with payload:", body);
+    
+    const response = await fetch("https://fxuafoiuwzsjezuqzjgn.supabase.co/functions/v1/transcribe-audio", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ recording_id: recordingId, user_id: userId }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(body)
     });
 
+    console.log("📥 Edge Function response status:", response.status);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Transcription failed: ${errorText}`);
+      const errText = await response.text();
+      console.error("❌ Edge Function error response:", errText);
+      throw new Error(`Edge Function failed: ${response.status} - ${errText}`);
     }
 
     const result = await response.json();
-    return result.text;
+    console.log("✅ Transcription result:", result);
+    return result;
   } catch (error) {
-    return null;
+    console.error("❌ Transcription failed:", error);
+    throw error;
   }
 }
 
@@ -125,46 +146,57 @@ async function saveEditedTranscription(recordingId, editedText) {
 async function fetchTranscription(recordingId) { /* unchanged */ }
 
 // ✅ Fetch and request follow-up email
-async function generateFollowUpEmail(recordingId) {
+export async function generateFollowUpEmail(recordingId, userId) {
   try {
-    const userId = await getUserId();
-    const { data: { session } } = await supabase.auth.getSession();
+    // Get the session and access token
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!session) throw new Error('No active session');
+    const accessToken = session.access_token;
 
-    if (!session?.access_token) throw new Error("No Supabase session found");
+    // Prepare the request body
+    const body = {
+      recording_id: recordingId,
+      user_id: userId
+    };
 
-    console.log("🔁 Calling generate-follow-up with:", {
-      recordingId,
-      userId,
-      token: session.access_token
-    });
-
+    console.log("📤 Calling Edge Function /generate-follow-up with payload:", body);
+    
     const response = await fetch("https://fxuafoiuwzsjezuqzjgn.supabase.co/functions/v1/generate-follow-up", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`,
+        "Authorization": `Bearer ${accessToken}`,
+        "Origin": window.location.origin
       },
-      body: JSON.stringify({
-        transcription_id: recordingId,
-        user_id: userId,
-      }),
+      body: JSON.stringify(body)
     });
 
+    console.log("📥 Edge Function response status:", response.status);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Follow-up failed: ${response.status} ${errorText}`);
+      const errText = await response.text();
+      console.error("❌ Edge Function error response:", errText);
+      throw new Error(`Edge Function failed: ${response.status} - ${errText}`);
     }
 
-    const { email_text } = await response.json();
-    return email_text;
+    const result = await response.json();
+    console.log("✅ Follow-up generation result:", result);
+    
+    if (!result.email_draft) {
+      throw new Error("No email draft returned from the server");
+    }
+    
+    return {
+      email_draft: result.email_draft
+    };
   } catch (error) {
-    console.error("generateFollowUpEmail error:", error);
-    return "";
+    console.error("❌ Follow-up generation failed:", error);
+    throw error;
   }
 }
 
 async function fetchFollowUpEmail(recordingId) { /* unchanged */ }
-
 
 async function getLatestRecording(userId) {
   if (!userId) {
@@ -197,17 +229,6 @@ async function createSignedUrl(storagePath) {
     return { signedUrl: data?.signedUrl || null, error };
   } catch (error) {
     return { signedUrl: null, error };
-  }
-}
-
-// ✅ NEW: Delete recording from storage
-async function deleteRecordingFromStorage(storagePath) {
-  try {
-    const { error } = await supabase.storage.from("recordings").remove([storagePath]);
-    if (error) throw error;
-    return true;
-  } catch (error) {
-    return false;
   }
 }
 
@@ -254,18 +275,28 @@ async function deleteRecording(recordingId, storagePath) {
   }
 }
 
+// ✅ NEW: Delete recording from storage
+async function deleteRecordingFromStorage(storagePath) {
+  try {
+    const { error } = await supabase.storage.from("recordings").remove([storagePath]);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+// Export all functions
 export {
   uploadRecording,
-  transcribeRecording,
+  saveTranscription,
+  saveEditedTranscription,
   fetchTranscription,
   fetchFollowUpEmail,
   getLatestRecording,
-  saveRecordingMetadata,
-  saveTranscription,
-  saveEditedTranscription,
   createSignedUrl,
+  saveRecordingMetadata,
+  deleteRecording,
   deleteRecordingFromStorage,
-  generateUniqueId,
-  generateFollowUpEmail,
-  deleteRecording // ✅ newly added
+  generateUniqueId
 };

@@ -1,11 +1,115 @@
-import { supabase } from "./config.js";
+import { supabase } from "./modules/auth.js";
 import { getBaseUrl } from "./utils.js";
 
-// Ensure user is in `users` table after OAuth login
+// Initialize UI elements
+const authBtn = document.getElementById("authBtn");
+const heading = document.getElementById("authHeading");
+const togglePrompt = document.getElementById("togglePrompt");
+const toast = document.getElementById("toast");
+const backBtn = document.getElementById("backBtn");
+const googleBtn = document.getElementById("googleBtn");
+
+let mode = "signin";
+let isRedirecting = false;
+let isInitialLoad = true;
+
+/**
+ * Comprehensive session check and redirect handler
+ * Ensures users can't access auth pages when already logged in
+ */
+async function checkExistingSession() {
+  try {
+    // First check if we're already redirecting
+    if (isRedirecting) return true;
+
+    // On initial load, only check local storage first
+    if (isInitialLoad) {
+      const storedSession = localStorage.getItem('sb-auth');
+      if (!storedSession) {
+        isInitialLoad = false;
+        return false;
+      }
+
+      try {
+        // Parse the stored session to check if it's valid
+        const parsedSession = JSON.parse(storedSession);
+        if (!parsedSession?.access_token) {
+          localStorage.removeItem('sb-auth');
+          isInitialLoad = false;
+          return false;
+        }
+      } catch (e) {
+        // If we can't parse the session, remove it
+        localStorage.removeItem('sb-auth');
+        isInitialLoad = false;
+        return false;
+      }
+    }
+
+    // Only make API calls if we have a stored session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session) {
+      isInitialLoad = false;
+      return false;
+    }
+
+    // If we have a valid session, proceed with redirect
+    isRedirecting = true;
+    
+    // Disable all interactive elements while redirecting
+    const interactiveElements = [authBtn, googleBtn, document.getElementById("email"), document.getElementById("password")];
+    interactiveElements.forEach(el => {
+      if (el) el.disabled = true;
+    });
+
+    // Show feedback to user
+    showToast("✅ You're already signed in — redirecting...", "success");
+    
+    // Small delay for toast to be visible
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Redirect based on onboarding status
+    await redirectBasedOnOnboarding(session.user.id);
+    return true;
+    
+  } catch (error) {
+    console.error("Session check error:", error);
+    isInitialLoad = false;
+    return false;
+  }
+}
+
+// Check session immediately when script loads
+checkExistingSession();
+
+// Also check when the page becomes visible again (handles back button)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    checkExistingSession();
+  }
+});
+
+// Handle history changes (back/forward navigation)
+window.addEventListener('popstate', () => {
+  checkExistingSession();
+});
+
+// Listen for auth state changes
 supabase.auth.onAuthStateChange(async (event, session) => {
+  console.log("🔄 Auth state changed:", event);
+  
   if (event === "SIGNED_IN" && session?.user) {
     const { id, email } = session.user;
 
+    // First check if the user already exists
+    const { data: existingUser, error: fetchError } = await supabase
+      .from("users")
+      .select("onboarded")
+      .eq("id", id)
+      .maybeSingle();
+
+    // Create/update user record
     const { error } = await supabase
       .from("users")
       .upsert([{
@@ -14,7 +118,8 @@ supabase.auth.onAuthStateChange(async (event, session) => {
         subscription_status: 'active',
         subscription_expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         credits_available: 3,
-        onboarded: false,
+        // Only set onboarded to false for new users
+        onboarded: existingUser ? existingUser.onboarded : false,
         created_at: new Date().toISOString()
       }], { onConflict: "id" });
 
@@ -24,6 +129,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("✅ User ensured in 'users' table after OAuth login");
     }
 
+    // Create/update user profile
     const { error: profileError } = await supabase
       .from("user_profiles")
       .upsert([{ user_id: id, tier: "user", admin: false }], { onConflict: "user_id" });
@@ -33,24 +139,14 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     } else {
       console.log("✅ User profile ensured in 'user_profiles' table after OAuth login");
     }
+
+    // Redirect if not already doing so
+    if (!isRedirecting) {
+      isRedirecting = true;
+      await redirectBasedOnOnboarding(id);
+    }
   }
 });
-
-// Check if session exists and redirect immediately if logged in
-supabase.auth.getSession().then(({ data: { session } }) => {
-  if (session?.user) {
-    redirectBasedOnOnboarding(session.user.id);
-  }
-});
-
-let mode = "signin";
-
-const authBtn = document.getElementById("authBtn");
-const heading = document.getElementById("authHeading");
-const togglePrompt = document.getElementById("togglePrompt");
-const toast = document.getElementById("toast");
-const backBtn = document.getElementById("backBtn");
-const googleBtn = document.getElementById("googleBtn");
 
 function showToast(message, type = "info") {
   toast.textContent = message;
@@ -61,6 +157,57 @@ function showToast(message, type = "info") {
   setTimeout(() => toast.classList.add("hidden"), 3500);
 }
 
+/**
+ * Handle authentication errors and display appropriate messages
+ */
+function handleAuthError(error, email) {
+  console.error("Auth error:", error);
+  
+  const errorMessage = error.message?.toLowerCase() || "";
+  
+  if (errorMessage.includes("invalid login credentials")) {
+    showToast("❌ Invalid email or password", "error");
+  } else if (errorMessage.includes("email not confirmed")) {
+    showToast(`📧 Please check your email (${email}) to confirm your account`, "info");
+  } else if (errorMessage.includes("user already registered")) {
+    showToast("❌ An account with this email already exists", "error");
+    // Switch to sign in mode
+    mode = "signin";
+    updateUI();
+  } else {
+    showToast(`❌ ${error.message || "Authentication failed"}`, "error");
+  }
+}
+
+/**
+ * Clear any displayed form errors
+ */
+function clearFormErrors() {
+  const errorElements = document.querySelectorAll('.error-message');
+  errorElements.forEach(el => el.remove());
+}
+
+/**
+ * Show an error message below an input field
+ */
+function showInputError(inputId, message) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  // Remove any existing error for this input
+  const existingError = input.parentElement.querySelector('.error-message');
+  if (existingError) existingError.remove();
+
+  // Create and insert error message
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error-message text-red-500 text-sm mt-1';
+  errorDiv.textContent = message;
+  input.parentElement.appendChild(errorDiv);
+}
+
+/**
+ * Validate email format
+ */
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -72,11 +219,25 @@ function setLoading(isLoading) {
     : mode === "signin" ? "Sign In" : "Sign Up";
 }
 
+function showFormError(field, message) {
+  const errorElement = document.getElementById(`${field}Error`);
+  if (errorElement) {
+    errorElement.textContent = message;
+    errorElement.classList.remove('hidden');
+    // Add red border to input
+    const input = document.getElementById(field);
+    if (input) {
+      input.classList.add('border', 'border-red-500');
+    }
+  }
+}
+
 function updateUI() {
+  clearFormErrors();
   heading.textContent = mode === "signin" ? "Welcome back" : "Create an account";
   authBtn.textContent = mode === "signin" ? "Sign In" : "Sign Up";
   togglePrompt.innerHTML = mode === "signin"
-    ? `<span id="switchMode" class="block w-full cursor-pointer">Don’t have an account? Sign up</span>`
+    ? `<span id="switchMode" class="block w-full cursor-pointer">Don't have an account? Sign up</span>`
     : `<span id="switchMode" class="block w-full cursor-pointer">Already have an account? Sign in</span>`;
 
   backBtn?.classList.toggle("hidden", mode === "signin");
@@ -98,157 +259,138 @@ function updateUI() {
     if (mode === "signup") {
       mode = "signin";
       updateUI();
-    } else {
-      window.history.back();
     }
   });
 }
 
+// Initialize UI
 updateUI();
 
-async function waitForSession(maxTries = 8) {
-  for (let i = 0; i < maxTries; i++) {
-    const { data } = await supabase.auth.getSession();
-    const userId = data?.session?.user?.id;
-    if (userId) return userId;
-    await new Promise((res) => setTimeout(res, i < 3 ? 500 : 1000));
-  }
-  return null;
-}
-
-async function redirectBasedOnOnboarding(userId) {
-  const { data, error } = await supabase
-    .from("users")
-    .select("onboarded")
-    .eq("id", userId)
-    .single();
-
-  if (error || data?.onboarded !== true) {
-    window.location.href = "./onboarding/welcome.html";
-  } else {
-    window.location.href = "recorder.html";
-  }
-}
-
+// Handle authentication button clicks
 authBtn.addEventListener("click", async () => {
-  console.log("🔑 Auth button clicked. Mode:", mode);
+  // First check if we already have a session
+  if (await checkExistingSession()) {
+    return;
+  }
+
+  clearFormErrors();
+
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
+  let hasError = false;
 
-  const { data: sessionData } = await supabase.auth.getSession();
-  console.log("📦 Existing session data:", sessionData);
-
-  if (!email || !password) {
-    showToast("⚠️ Email and password required.", "error");
-    return;
-  }
-  console.log("📧 Email entered:", email);
-  console.log("🔒 Password length:", password.length);
-  if (!isValidEmail(email)) {
-    showToast("⚠️ Please enter a valid email address.", "error");
-    return;
+  // Validate inputs
+  if (!email) {
+    showInputError("email", "Email is required");
+    hasError = true;
+  } else if (!isValidEmail(email)) {
+    showInputError("email", "Please enter a valid email address");
+    hasError = true;
   }
 
-  const alreadySignedIn = sessionData?.session?.user;
-
-  if (mode === "signup" && alreadySignedIn) {
-    showToast("⚠️ You're already signed in. Sign out before signing up.", "error");
-    return;
+  if (!password) {
+    showInputError("password", "Password is required");
+    hasError = true;
   }
+
+  if (hasError) return;
+
+  // Disable button and show loading state
+  authBtn.disabled = true;
+  const originalText = authBtn.textContent;
+  authBtn.textContent = "Loading...";
 
   try {
-    setLoading(true);
-    console.log("🟡 setLoading(true) triggered");
-    console.log("⏳ Attempting to authenticate...");
-
     if (mode === "signin") {
-      console.log("🔄 Sign-in flow started");
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      console.log("🧾 Supabase signIn response:", { data, signInError });
-      console.log("🔍 Sign-in response:", { data, signInError });
-      if (signInError) {
-        console.error("❌ Sign-in failed:", signInError);
-        if (signInError.status === 400) {
-          showToast("❌ No account found with this email. Please sign up first.", "error");
-        } else {
-          showToast(`❌ ${signInError.message}`, "error");
-        }
-        return;
-      }
-      showToast("✅ Logged in! Redirecting...", "success");
-      setTimeout(() => redirectBasedOnOnboarding(data?.user?.id), 1000);
-    } else {
-      console.log("🆕 Sign-up flow started");
-      const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
-      console.log("🧾 Supabase signUp response:", { data, signUpError });
-      if (signUpError) {
-        showToast(`❌ ${signUpError.message}`, "error");
-        return;
-      }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-      const userId = await waitForSession();
-      if (!userId) {
-        showToast("❌ Auth succeeded, but session not ready.", "error");
-        return;
-      }
-
-      const { error: insertError } = await supabase
-        .from("users")
-        .upsert([{
-          id: userId,
-          email,
-          subscription_status: 'active',
-          subscription_expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          credits_available: 3,
-          onboarded: false,
-          created_at: new Date().toISOString()
-        }], { onConflict: "id" });
-
-      console.log("📥 Insert result (users):", insertError);
-
-      if (insertError) {
-        showToast(`⚠️ Auth succeeded, DB insert failed: ${insertError.message}`, "error");
-        return;
-      }
+      if (error) throw error;
       
-      const { error: profileInsertError } = await supabase
-        .from("user_profiles")
-        .upsert([{ user_id: userId, tier: "user", admin: false }], { onConflict: "user_id" });
+      showToast("✅ Successfully signed in", "success");
+      console.log("Sign in successful:", data);
+      
+    } else { // Sign up mode
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${getBaseUrl()}/auth/callback`
+        }
+      });
 
-      if (profileInsertError) {
-        console.error("⚠️ Failed to insert into user_profiles:", profileInsertError.message);
-      } else {
-        console.log("✅ User profile created in 'user_profiles' table");
-      }
+      if (error) throw error;
 
-      showToast("✅ Account created! Redirecting...", "success");
-      setTimeout(() => redirectBasedOnOnboarding(userId), 1000);
+      showToast("✅ Check your email to confirm your account", "success");
+      console.log("Sign up successful:", data);
     }
-  } catch (err) {
-    console.error("🔥 Unexpected error in auth flow:", err);
-    showToast("❌ Something went wrong.", "error");
+  } catch (error) {
+    handleAuthError(error, email);
   } finally {
-    setLoading(false);
+    // Restore button state
+    authBtn.disabled = false;
+    authBtn.textContent = originalText;
   }
 });
 
+// Handle Google OAuth
 googleBtn?.addEventListener("click", async () => {
-  console.log("🔐 Google sign-in button clicked.");
-  try {
-    const redirectTo = `${getBaseUrl()}/onboarding/welcome.html`;
+  if (await checkExistingSession()) {
+    return;
+  }
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo },
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${getBaseUrl()}/auth/callback`
+      }
     });
 
-    if (error) {
-      showToast(`❌ Google sign-in failed: ${error.message}`, "error");
-    } else {
-      showToast("✅ Google login started, check popup or redirect.", "info");
-    }
-  } catch (err) {
-    console.error("Google OAuth error", err);
-    showToast("❌ Google sign-in failed.", "error");
+    if (error) throw error;
+    console.log("Google OAuth initiated:", data);
+  } catch (error) {
+    console.error("Google OAuth error:", error);
+    showToast("❌ Failed to initialize Google sign in", "error");
   }
 });
+
+/**
+ * Redirect user based on their onboarding status
+ * @param {string} userId - The user's ID
+ */
+async function redirectBasedOnOnboarding(userId) {
+  try {
+    // Check if user has completed onboarding and has all required fields
+    const { data, error } = await supabase
+      .from("users")
+      .select("onboarded, role, use_case, tools, language")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      console.error("❌ Failed to check onboarding status:", error);
+      // Default to onboarding if we can't determine status
+      window.location.href = "./onboarding/welcome.html";
+      return;
+    }
+
+    // Check if all required fields are filled and onboarding is marked as complete
+    const allFieldsFilled = data?.role && data?.use_case && data?.tools && data?.language;
+    
+    // Redirect based on onboarding status and fields
+    if (data?.onboarded && allFieldsFilled) {
+      window.location.href = "./recorder.html";
+    } else {
+      window.location.href = "./onboarding/welcome.html";
+    }
+  } catch (error) {
+    console.error("❌ Redirect error:", error);
+    // Default to onboarding on error
+    window.location.href = "./onboarding/welcome.html";
+  }
+}
+
+// Rest of your existing code...

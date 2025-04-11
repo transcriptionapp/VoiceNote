@@ -1,4 +1,11 @@
-import { supabase } from '../js/config.js';
+import { supabase } from '../js/modules/auth.js';
+import { onboardingManager } from '../js/modules/onboardingManager.js';
+
+// Initialize onboarding manager and check if we should be on this page
+(async () => {
+  await onboardingManager.init();
+  await onboardingManager.checkRedirect();
+})();
 
 async function buildSummary() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -37,18 +44,19 @@ async function goToApp() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return redirectToLogin();
 
-  const { error } = await supabase
-    .from('users')
-    .update({
-      onboarded: true,
-      onboarded_at: new Date().toISOString()
-    })
-    .eq('id', user.id);
+  try {
+    // Mark onboarding as complete
+    const success = await onboardingManager.completeOnboarding();
+    
+    if (!success) {
+      throw new Error('Failed to complete onboarding');
+    }
 
-  if (error) {
+    // Redirect to main app
+    window.location.href = "../recorder.html";
+  } catch (error) {
+    console.error('Error completing onboarding:', error);
     alert("Failed to finish onboarding. Try again.");
-  } else {
-    window.location.href = "../recorder.html"; // Adjust path if needed
   }
 }
 
@@ -57,5 +65,33 @@ function redirectToLogin() {
 }
 
 // 🔥 Attach button listener + render summary
-document.getElementById("start-btn").addEventListener("click", goToApp);
-buildSummary();
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return (window.location.href = "../signup.html");
+
+  const { data: userData, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (error) {
+    console.error("❌ Failed to fetch user data:", error);
+    return;
+  }
+
+  // Update UI with user data
+  const nameElement = document.getElementById("userName");
+  if (nameElement) {
+    nameElement.textContent = userData.name || "there";
+  }
+
+  // Add event listener for the start button
+  const startButton = document.getElementById("start-btn");
+  if (startButton) {
+    startButton.addEventListener("click", goToApp);
+  }
+
+  // Build the summary
+  buildSummary();
+});

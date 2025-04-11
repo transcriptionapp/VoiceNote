@@ -1,0 +1,188 @@
+/* Mobile UX Optimizations */
+
+/* ===== TOUCH TARGET ENHANCEMENT ===== */
+/* Ensure all interactive elements meet minimum touch target size (44x44px) */
+button, 
+.btn-primary, 
+.btn-secondary, 
+.recording-item-button,
+.follow-up-button,
+#menuButton,
+#recordToggle,
+#sendViaGmail,
+.view-followup,
+.generate-followup {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 12px 16px;
+}
+
+/* Increase padding for smaller elements to meet touch target requirements */
+#menuButton,
+.recording-item-button {
+  padding: 10px;
+}
+
+/* Ensure form elements are touch-friendly */
+input, 
+textarea, 
+select {
+  min-height: 44px;
+  font-size: 16px; /* Prevents iOS zoom on focus */
+}
+
+/* ===== VISUAL FEEDBACK SYSTEM ===== */
+/* Active state for all interactive elements */
+button:active, 
+.btn-primary:active, 
+.btn-secondary:active, 
+.recording-item-button:active,
+.follow-up-button:active,
+#menuButton:active,
+#recordToggle:active,
+#sendViaGmail:active,
+.view-followup:active,
+.generate-followup:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* Hover state for all interactive elements */
+button:hover, 
+.btn-primary:hover, 
+.btn-secondary:hover, 
+.recording-item-button:hover,
+.follow-up-button:hover,
+#menuButton:hover,
+#recordToggle:hover,
+#sendViaGmail:hover,
+.view-followup:hover,
+.generate-followup:hover {
+  filter: brightness(1.05);
+}
+
+/* Focus state for all interactive elements */
+button:focus, 
+.btn-primary:focus, 
+.btn-secondary:focus, 
+.recording-item-button:focus,
+.follow-up-button:focus,
+#menuButton:focus,
+#recordToggle:focus,
+#sendViaGmail:focus,
+.view-followup:focus,
+.generate-followup:focus {
+  outline: 2px solid #1980e6;
+  outline-offset: 2px;
+}
+
+/* ===== RESPONSIVE FONT SIZING ===== */
+/* Base font size for mobile */
+html {
+  font-size: 16px;
+}
+
+/* Responsive font sizing for different screen sizes */
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  p, span, div {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 769px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+/* ===== TOUCH SCROLLING OPTIMIZATION ===== */
+/* Optimize scrollable areas for touch interaction */
+.overflow-y-auto,
+#recordingsList,
+.follow-up-section,
+textarea {
+  -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
+  scroll-behavior: smooth;
+  overscroll-behavior: contain; /* Prevent scroll chaining */
+}
+
+/* Increase spacing between items in scrollable lists */
+#recordingsList .recording-item {
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+/* ===== RESPONSIVE LAYOUT IMPROVEMENTS ===== */
+/* Improve layout for narrow screens */
+@media (max-width: 480px) {
+  .max-w-[480px] {
+    width: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .flex-col {
+    gap: 16px;
+  }
+  
+  .recording-item-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .recording-item-button {
+    width: 100%;
+  }
+}
+
+/* ===== ADDITIONAL MOBILE OPTIMIZATIONS ===== */
+/* Prevent text selection on interactive elements */
+button, 
+.btn-primary, 
+.btn-secondary, 
+.recording-item-button,
+.follow-up-button,
+#menuButton,
+#recordToggle,
+#sendViaGmail,
+.view-followup,
+.generate-followup {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Improve tap highlight color */
+* {
+  -webkit-tap-highlight-color: rgba(25, 128, 230, 0.2);
+}
+
+/* Ensure proper spacing for touch targets */
+.recording-item {
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* Improve visibility of interactive elements */
+.recording-item-button,
+.follow-up-button {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+} 

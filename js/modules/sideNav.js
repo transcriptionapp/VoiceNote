@@ -1,4 +1,11 @@
-import { supabase } from "../config.js";
+/**
+ * SideNavManager
+ * 
+ * Manages the side navigation functionality.
+ * Handles user profile, navigation links, and logout.
+ */
+
+import { supabase } from './auth.js';  // Import supabase from auth.js
 
 export class SideNavManager {
     constructor() {
@@ -21,6 +28,14 @@ export class SideNavManager {
       }
       this.menuButton.addEventListener("click", () => this.toggleNav());
       this.overlay.addEventListener("click", () => this.closeNav());
+
+      // Add profile link click handler
+      const profileLink = document.getElementById("profileLink");
+      if (profileLink) {
+        profileLink.addEventListener("click", () => {
+          window.location.href = "./profile.html";
+        });
+      }
 
       const logoutBtn = document.getElementById("logoutBtn");
       if (logoutBtn) {

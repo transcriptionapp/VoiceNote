@@ -13,6 +13,7 @@
     />
     <!-- Changed from /css/output.css to ./css/output.css -->
     <link rel="stylesheet" href="./css/output.css" />
+    <link rel="stylesheet" href="./css/mobile-optimizations.css" />
   </head>
   <body class="bg-slate-50 font-sans">
     <div class="min-h-screen flex flex-col overflow-x-hidden">
@@ -88,16 +89,6 @@
           id="errorBox"
           class="hidden text-red-500 text-sm text-center px-4"
         ></div>
-
-        <!-- Progress Bar for follow-up generation -->
-        <div class="w-full max-w-[480px] mx-auto px-4 pb-4">
-          <progress
-            id="followUpProgressBar"
-            value="0"
-            max="100"
-            class="w-full h-2 hidden rounded-full overflow-hidden bg-gray-200"
-          ></progress>
-        </div>
       </div>
 
       <!-- Actions -->
@@ -119,13 +110,6 @@
           </svg>
           <span>Send Follow-Up via Gmail</span>
         </button>
-        <div class="mt-4 hidden" id="saveFollowUpBtn">
-          <button
-            class="w-full h-12 rounded-full bg-[#4b5563] text-white font-bold text-base"
-          >
-            💾 Save Edits
-          </button>
-        </div>
       </div>
     </div>
 
@@ -144,19 +128,13 @@
         <div class="flex items-center gap-3 mb-6">
           <div
             class="size-10 rounded-full bg-cover bg-center"
-            style="background-image: url('https://cdn.usegalileo.ai/sdxl10/bbe14333-12fd-4d25-a0c2-18ad8d86d75e.png')"
+            style="background-image: url('https://placehold.co/40x40')"
           ></div>
           <div>
             <p class="text-base font-bold">Your Profile</p>
             <p id="userEmail" class="text-xs text-gray-500 truncate">Logged in</p>
           </div>
         </div>
-        <button
-          id="changeInterestsBtn"
-          class="text-left w-full px-3 py-2 rounded hover:bg-slate-100 text-[#0e141b] mb-2"
-        >
-          🧭 Change my interests
-        </button>
         <button
           id="deleteDataBtn"
           class="text-left w-full px-3 py-2 rounded hover:bg-slate-100 text-red-600 mb-2"

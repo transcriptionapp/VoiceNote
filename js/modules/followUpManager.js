@@ -1,4 +1,5 @@
-import { getUserId, supabase } from '../config.js';  // Import getUserId and supabase
+import { getUserId } from '../done.js';  // Import getUserId from done.js
+import { supabase } from '../modules/auth.js';  // Import supabase from auth.js
 
 export class FollowUpManager {
   constructor() {
@@ -22,34 +23,40 @@ export class FollowUpManager {
   }
 
   // Generate follow-up email based on transcription using the Edge Function
-  async generateFollowUp(recordingId) {
+  async generateFollowUp(transcriptionId) {
     try {
       const { userId, accessToken } = await this.checkAuthentication();
-
-      const response = await fetch(this.followUpUrl, {
-        method: 'POST',
+      
+      // Prepare the request body
+      const body = {
+        recording_id: transcriptionId,
+        user_id: userId
+      };
+      
+      // Use direct fetch with proper authorization headers
+      console.log("📤 Calling Edge Function /generate-follow-up with payload:", body);
+      const response = await fetch("https://fxuafoiuwzsjezuqzjgn.supabase.co/functions/v1/generate-follow-up", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
+          "Authorization": `Bearer ${accessToken}`
         },
-        body: JSON.stringify({
-          transcription_id: recordingId,
-          user_id: userId,
-        }),
+        body: JSON.stringify(body)
       });
-
+      
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Follow-up request failed:', errorText);
-        throw new Error(`Follow-up failed: ${errorText}`);
+        const errText = await response.text();
+        console.error("❌ Edge Function error response:", errText);
+        throw new Error(`Edge Function failed: ${response.status} - ${errText}`);
       }
-
-      const { email_text } = await response.json();
-      return email_text; // Return the generated email text
-
+      
+      const result = await response.json();
+      console.log("📝 Follow-up generation result:", result);
+      
+      return result.email_draft;
     } catch (error) {
       console.error("Follow-up generation failed:", error.message);
-      return "";
+      return null;
     }
   }
 }
