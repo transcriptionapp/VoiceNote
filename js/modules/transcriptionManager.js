@@ -44,62 +44,88 @@ export class TranscriptionManager {
     }
   }
 
-  async _ensureMp3Format(blob) {
-    if (blob.type === 'audio/mpeg' || blob.type === 'audio/mp3') return blob;
-    return new Blob([blob], { type: 'audio/mpeg' });
+  async _ensureMp3Format(audioBlob) {
+    // If already MP3, return as is
+    if (audioBlob.type === 'audio/mpeg' || audioBlob.type === 'audio/mp3') {
+      return audioBlob;
+    }
+
+    // For Safari, we might get audio/mp4 or audio/aac
+    if (audioBlob.type === 'audio/mp4' || audioBlob.type === 'audio/aac') {
+      // Create a new blob with the correct MIME type
+      return new Blob([audioBlob], { type: 'audio/mpeg' });
+    }
+
+    // For other formats, we'll need to convert
+    // For now, we'll just ensure it's marked as MP3
+    return new Blob([audioBlob], { type: 'audio/mpeg' });
   }
 
-  async uploadRecording(audioBlob, recordingId) {
-    let storagePath;
+  async uploadRecording(audioBlob, metadata) {
     try {
-      const { userId } = await this.checkAuthentication();
-      if (!recordingId) throw new Error("Missing recording ID");
-      if (audioBlob.size > this.MAX_FILE_SIZE) {
-        throw new Error(`File too large (${(audioBlob.size / 1024 / 1024).toFixed(2)}MB)`);
+      if (!this.supabase) {
+        throw new Error('Supabase client not initialized');
       }
 
-      storagePath = `${userId}/${recordingId}.mp3`;
+      // Ensure we have a valid session
+      const { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) throw new Error('No active session');
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("recordings")
-        .upload(storagePath, audioBlob, {
+      // Generate a unique filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `recording_${timestamp}.mp3`;
+      
+      // Ensure the audio is in MP3 format
+      const mp3Blob = await this._ensureMp3Format(audioBlob);
+      
+      // Upload to Supabase Storage with proper content type
+      const { data: uploadData, error: uploadError } = await this.supabase.storage
+        .from('recordings')
+        .upload(`${session.user.id}/${filename}`, mp3Blob, {
           contentType: 'audio/mpeg',
-          upsert: false,
-          cacheControl: "3600",
-          metadata: { user_id: userId }
+          cacheControl: '3600',
+          upsert: false
         });
-      if (uploadError) throw uploadError;
 
-      // Generate the public URL for the uploaded file
-      const { data: { publicUrl } } = supabase.storage
-        .from("recordings")
-        .getPublicUrl(storagePath);
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
-      // Save recording metadata
-      await this.saveRecordingMetadata({
-        recordingId,
-        userId,
-        publicUrl,
-        filename: storagePath,
-        timestamp: new Date().toISOString(),
-        duration: 0,
-        fileSize: audioBlob.size,
-        mimeType: audioBlob.type
-      });
+      // Get the public URL
+      const { data: { publicUrl } } = this.supabase.storage
+        .from('recordings')
+        .getPublicUrl(`${session.user.id}/${filename}`);
+
+      // Save metadata to database
+      const { data: recordingData, error: dbError } = await this.supabase
+        .from('recordings')
+        .insert([{
+          user_id: session.user.id,
+          filename: filename,
+          storage_path: `${session.user.id}/${filename}`,
+          duration: metadata.duration || 0,
+          size: mp3Blob.size,
+          status: 'uploaded'
+        }])
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw dbError;
+      }
 
       return {
-        recording_id: recordingId,
-        file_url: publicUrl,
-        storage_path: uploadData?.path,
-        user_id: userId
+        recording_id: recordingData.id,
+        filename: filename,
+        storage_path: `${session.user.id}/${filename}`,
+        public_url: publicUrl
       };
-
     } catch (error) {
-      console.error("❌ Upload error:", error);
-      if (storagePath) {
-        await supabase.storage.from("recordings").remove([storagePath]);
-      }
-      return false;
+      console.error('Error in uploadRecording:', error);
+      throw error;
     }
   }
 

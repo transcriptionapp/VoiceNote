@@ -26,21 +26,26 @@ export class MediaRecorderManager {
    */
   async startRecording() {
     try {
-      // Request microphone access
+      // Request microphone access with Safari-specific constraints
       this.stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
+          autoGainControl: true,
+          sampleRate: 44100,
+          channelCount: 1
         } 
       });
       
-      // Determine supported MIME type
+      // Determine supported MIME type with Safari-specific handling
       const mimeType = this._getSupportedMimeType();
       console.log("🔊 Using mime type:", mimeType || "default");
 
       // Create MediaRecorder with appropriate options
-      const options = mimeType ? { mimeType } : {};
+      const options = mimeType ? { 
+        mimeType,
+        audioBitsPerSecond: 128000
+      } : {};
       this.mediaRecorder = new MediaRecorder(this.stream, options);
 
       // Set up event handlers
@@ -183,13 +188,30 @@ export class MediaRecorderManager {
    * @private
    */
   _getSupportedMimeType() {
+    // Safari-specific MIME types first
     const types = [
       'audio/mp4',
+      'audio/aac',
+      'audio/mpeg',
       'audio/webm',
       'audio/ogg',
       'audio/wav'
     ];
     
+    // Check for Safari
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    
+    if (isSafari) {
+      // Safari-specific handling
+      if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        return 'audio/mp4';
+      }
+      if (MediaRecorder.isTypeSupported('audio/aac')) {
+        return 'audio/aac';
+      }
+    }
+    
+    // Fallback to checking all supported types
     for (const type of types) {
       if (MediaRecorder.isTypeSupported(type)) {
         return type;
