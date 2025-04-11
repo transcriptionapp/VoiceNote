@@ -301,12 +301,35 @@ function createRecordingItem(recording) {
   audioSection.className = 'collapsible-section hidden';
   audioSection.innerHTML = `
     <div class="collapsible-content">
-      <audio controls class="w-full">
+      <audio controls class="w-full" preload="metadata">
         <source src="${recording.url}" type="audio/wav">
         Your browser does not support the audio element.
       </audio>
     </div>
   `;
+
+  // Add event listeners to the audio element for Safari compatibility
+  const audioElement = audioSection.querySelector('audio');
+  audioElement.addEventListener('play', () => {
+    // Ensure audio context is initialized on user interaction (required for Safari)
+    if (window.AudioContext || window.webkitAudioContext) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!window.audioContext) {
+        window.audioContext = new AudioContext();
+      }
+    }
+  });
+  
+  // Add error handling for audio playback
+  audioElement.addEventListener('error', (e) => {
+    console.error('Audio playback error:', e);
+    // Try to reload the audio source
+    const currentSrc = audioElement.src;
+    audioElement.src = '';
+    setTimeout(() => {
+      audioElement.src = currentSrc;
+    }, 100);
+  });
 
   const followUpSection = document.createElement('div');
   followUpSection.className = 'collapsible-section hidden';

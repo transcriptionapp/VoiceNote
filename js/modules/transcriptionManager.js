@@ -336,16 +336,16 @@ export class TranscriptionManager {
 
     const response = await fetch("https://fxuafoiuwzsjezuqzjgn.supabase.co/functions/v1/check-transcription", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${accessToken}`,
-      },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+        },
       body: JSON.stringify({ recording_id: recordingId }),
       mode: "cors",
       credentials: "omit"
-    });
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
       const errText = await response.text();
       throw new Error(`Check transcription failed: ${response.status} - ${errText}`);
     }

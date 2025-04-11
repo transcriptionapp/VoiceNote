@@ -727,5 +727,5 @@ export class UIManager {
     }
 
     return result.email_draft;  // Return just the email_draft string
+    }
   }
-}
