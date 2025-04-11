@@ -16,7 +16,6 @@ let currentRecordingId = "";
 function enableFollowUpButton() {
   const followupBtn = document.getElementById("gotoFollowup");
   if (followupBtn) {
-    followupBtn.classList.remove("hidden");
     followupBtn.disabled = false;
     followupBtn.removeAttribute("title");
   }
@@ -26,7 +25,6 @@ function enableFollowUpButton() {
 function disableFollowUpButton() {
   const followupBtn = document.getElementById("gotoFollowup");
   if (followupBtn) {
-    followupBtn.classList.add("hidden");
     followupBtn.disabled = true;
     followupBtn.title = "Create a recording first and wait until transcribed to generate follow up";
   }

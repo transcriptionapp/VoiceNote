@@ -27,44 +27,37 @@ export class MediaRecorderManager {
   async startRecording() {
     try {
       // Request microphone access with Safari-specific constraints
-      this.stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
           sampleRate: 44100,
           channelCount: 1
-        } 
+        }
       });
-      
-      // Determine supported MIME type with Safari-specific handling
+
+      // Safari-specific MIME type handling
       const mimeType = this._getSupportedMimeType();
-      console.log("🔊 Using mime type:", mimeType || "default");
+      console.log("📝 Using MIME type:", mimeType);
 
-      // Create MediaRecorder with appropriate options
-      const options = mimeType ? { 
-        mimeType,
+      // Configure MediaRecorder with optimal settings for mobile
+      const options = {
+        mimeType: mimeType,
         audioBitsPerSecond: 128000
-      } : {};
-      this.mediaRecorder = new MediaRecorder(this.stream, options);
+      };
 
-      // Set up event handlers
+      this.mediaRecorder = new MediaRecorder(stream, options);
       this._setupEventHandlers();
-      
-      // Start recording
-      this.mediaRecorder.start();
+      this.mediaRecorder.start(1000); // Collect data every second
       this.isRecording = true;
       this.recordingStartTime = Date.now();
-      
-      // Start recording timer
       this._startRecordingTimer();
-      
-      console.log("🔊 Recording started");
-      return true;
+      this.dispatchEvent('recordingStarted');
     } catch (error) {
-      console.error("❌ Recording error:", error.message);
-      this._handleRecordingError(error);
-      return false;
+      console.error("❌ Error starting recording:", error);
+      this.dispatchEvent('recordingError', { error: error.message });
+      throw error;
     }
   }
 
@@ -188,37 +181,38 @@ export class MediaRecorderManager {
    * @private
    */
   _getSupportedMimeType() {
-    // Safari-specific MIME types first
     const types = [
+      'audio/webm',
+      'audio/webm;codecs=opus',
+      'audio/ogg;codecs=opus',
       'audio/mp4',
       'audio/aac',
-      'audio/mpeg',
-      'audio/webm',
-      'audio/ogg',
-      'audio/wav'
+      'audio/mpeg'
     ];
-    
-    // Check for Safari
+
+    // Check if we're on Safari
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     
     if (isSafari) {
-      // Safari-specific handling
-      if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        return 'audio/mp4';
-      }
-      if (MediaRecorder.isTypeSupported('audio/aac')) {
-        return 'audio/aac';
+      // Safari prefers these formats
+      const safariTypes = ['audio/mp4', 'audio/aac', 'audio/mpeg'];
+      for (const type of safariTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          console.log("✅ Using Safari-optimized format:", type);
+          return type;
+        }
       }
     }
-    
-    // Fallback to checking all supported types
+
+    // For other browsers, try the standard formats
     for (const type of types) {
       if (MediaRecorder.isTypeSupported(type)) {
         return type;
       }
     }
-    
-    return null;
+
+    // Fallback to default
+    return '';
   }
 
   /**
