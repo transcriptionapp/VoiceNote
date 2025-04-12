@@ -111,29 +111,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h3>Language</h3>
                     <p class="preference-description">Select your primary language for transcription</p>
                     <select id="language" class="preference-select">
+                        <option value="">Not set</option>
                         <option value="English" ${data.language === 'English' ? 'selected' : ''}>English</option>
                         <option value="Spanish" ${data.language === 'Spanish' ? 'selected' : ''}>Spanish</option>
                         <option value="French" ${data.language === 'French' ? 'selected' : ''}>French</option>
                         <option value="German" ${data.language === 'German' ? 'selected' : ''}>German</option>
                         <option value="Other" ${data.language === 'Other' ? 'selected' : ''}>Other</option>
                     </select>
+                    ${!data.language ? '<p class="text-sm text-gray-500 mt-1">Please select a language</p>' : ''}
                 </div>
                 <div class="preference-item">
                     <h3>Role</h3>
                     <p class="preference-description">What best describes your professional role?</p>
                     <select id="role" class="preference-select">
+                        <option value="">Not set</option>
                         <option value="consultant" ${data.role === 'consultant' ? 'selected' : ''}>Consultant</option>
                         <option value="recruiter" ${data.role === 'recruiter' ? 'selected' : ''}>Recruiter</option>
                         <option value="lawyer" ${data.role === 'lawyer' ? 'selected' : ''}>Lawyer</option>
-                        <option value="sales" ${data.role === 'sales' ? 'selected' : ''}>Sales Representative</option>
+                        <option value="sales" ${data.role === 'sales' ? 'selected' : ''}>Sales</option>
                         <option value="coach" ${data.role === 'coach' ? 'selected' : ''}>Coach</option>
                         <option value="other" ${data.role === 'other' ? 'selected' : ''}>Other</option>
                     </select>
+                    ${!data.role ? '<p class="text-sm text-gray-500 mt-1">Please select your role</p>' : ''}
                 </div>
                 <div class="preference-item">
                     <h3>Use Case</h3>
                     <p class="preference-description">What type of conversations do you want to capture?</p>
                     <select id="useCase" class="preference-select">
+                        <option value="">Not set</option>
                         <option value="Client meetings" ${data.use_case === 'Client meetings' ? 'selected' : ''}>Client meetings</option>
                         <option value="Sales calls" ${data.use_case === 'Sales calls' ? 'selected' : ''}>Sales calls</option>
                         <option value="Interviews" ${data.use_case === 'Interviews' ? 'selected' : ''}>Interviews</option>
@@ -142,53 +147,44 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <option value="Internal team syncs" ${data.use_case === 'Internal team syncs' ? 'selected' : ''}>Internal team syncs</option>
                         <option value="Other" ${data.use_case === 'Other' ? 'selected' : ''}>Other</option>
                     </select>
+                    ${!data.use_case ? '<p class="text-sm text-gray-500 mt-1">Please select your use case</p>' : ''}
                 </div>
                 <div class="preference-item">
                     <h3>Tools</h3>
                     <p class="preference-description">Select the tools you use for recording conversations</p>
                     <button id="toolsBtn" class="tools-select-btn">
-                        ${data.tools ? data.tools.split(',').length : 0} tools selected
+                        ${data.tools ? data.tools.split(',').length : '0'} tools selected
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
                             <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>
                         </svg>
                     </button>
                     <div id="toolsDropdown" class="tools-dropdown hidden">
-                        <div class="tools-options">
+                        <div class="tool-options">
                             <label class="tool-option">
-                                <input type="checkbox" value="Mobile phone" ${data.tools && data.tools.includes('Mobile phone') ? 'checked' : ''}>
-                                <span>Mobile phone</span>
+                                <input type="checkbox" value="Zoom" ${data.tools?.includes('Zoom') ? 'checked' : ''}>
+                                Zoom
                             </label>
                             <label class="tool-option">
-                                <input type="checkbox" value="Desktop computer" ${data.tools && data.tools.includes('Desktop computer') ? 'checked' : ''}>
-                                <span>Desktop computer</span>
+                                <input type="checkbox" value="Teams" ${data.tools?.includes('Teams') ? 'checked' : ''}>
+                                Microsoft Teams
                             </label>
                             <label class="tool-option">
-                                <input type="checkbox" value="Zoom / Online meetings" ${data.tools && data.tools.includes('Zoom / Online meetings') ? 'checked' : ''}>
-                                <span>Zoom / Online meetings</span>
+                                <input type="checkbox" value="Meet" ${data.tools?.includes('Meet') ? 'checked' : ''}>
+                                Google Meet
                             </label>
                             <label class="tool-option">
-                                <input type="checkbox" value="In-person 1:1s" ${data.tools && data.tools.includes('In-person 1:1s') ? 'checked' : ''}>
-                                <span>In-person 1:1s</span>
+                                <input type="checkbox" value="Phone" ${data.tools?.includes('Phone') ? 'checked' : ''}>
+                                Phone Calls
                             </label>
                             <label class="tool-option">
-                                <input type="checkbox" value="Conferences / Events" ${data.tools && data.tools.includes('Conferences / Events') ? 'checked' : ''}>
-                                <span>Conferences / Events</span>
-                            </label>
-                            <label class="tool-option">
-                                <input type="checkbox" value="Office meetings" ${data.tools && data.tools.includes('Office meetings') ? 'checked' : ''}>
-                                <span>Office meetings</span>
-                            </label>
-                            <label class="tool-option">
-                                <input type="checkbox" value="Real-estate viewings" ${data.tools && data.tools.includes('Real-estate viewings') ? 'checked' : ''}>
-                                <span>Real-estate viewings</span>
+                                <input type="checkbox" value="Other" ${data.tools?.includes('Other') ? 'checked' : ''}>
+                                Other
                             </label>
                         </div>
-                        <div class="tools-dropdown-footer">
-                            <button id="applyTools" class="apply-tools-btn">Apply</button>
-                        </div>
+                        <button id="applyTools" class="apply-tools-btn">Apply</button>
                     </div>
-                </div>
-            `;
+                    ${!data.tools ? '<p class="text-sm text-gray-500 mt-1">No tools selected</p>' : ''}
+                </div>`;
 
             // Add event listeners for the dropdowns
             document.getElementById('language').addEventListener('change', function() {
@@ -208,24 +204,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             const toolsDropdown = document.getElementById('toolsDropdown');
             const applyToolsBtn = document.getElementById('applyTools');
 
-            toolsBtn.addEventListener('click', function() {
-                toolsDropdown.classList.toggle('hidden');
-            });
+            if (toolsBtn && toolsDropdown && applyToolsBtn) {
+                toolsBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toolsDropdown.classList.toggle('hidden');
+                });
 
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!toolsBtn.contains(e.target) && !toolsDropdown.contains(e.target)) {
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!toolsBtn.contains(e.target) && !toolsDropdown.contains(e.target)) {
+                        toolsDropdown.classList.add('hidden');
+                    }
+                });
+
+                applyToolsBtn.addEventListener('click', async function() {
+                    const selectedTools = Array.from(document.querySelectorAll('.tool-option input:checked'))
+                        .map(checkbox => checkbox.value);
+                    await updatePreference('tools', selectedTools.join(','));
+                    toolsBtn.innerHTML = `${selectedTools.length} tools selected
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>
+                        </svg>`;
                     toolsDropdown.classList.add('hidden');
-                }
-            });
-
-            applyToolsBtn.addEventListener('click', function() {
-                const selectedTools = Array.from(document.querySelectorAll('.tool-option input:checked'))
-                    .map(checkbox => checkbox.value);
-                updatePreference('tools', selectedTools.join(','));
-                toolsBtn.textContent = `${selectedTools.length} tools selected`;
-                toolsDropdown.classList.add('hidden');
-            });
+                });
+            }
 
         } catch (error) {
             console.error('Error loading preferences:', error);
