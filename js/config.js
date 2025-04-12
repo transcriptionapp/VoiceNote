@@ -12,9 +12,7 @@ const isGitHubPages = window.location.hostname.includes('github.io');
 export const basePath = isGitHubPages ? '/VoiceNote' : '';
 
 // Site URL configuration
-export const siteUrl = isGitHubPages 
-  ? 'https://transcriptionapp.github.io'
-  : window.location.origin;
+export const siteUrl = window.location.origin;
 
 // API endpoint configuration
 export const apiEndpoints = {
@@ -33,6 +31,12 @@ export const assetPaths = {
   js: `${basePath}/js`
 };
 
+// Auth configuration
+export const authConfig = {
+  redirectUrl: `${siteUrl}${basePath}/onboarding/welcome.html`,
+  signInRedirectUrl: `${siteUrl}${basePath}/recorder.html`
+};
+
 // Fallback configuration
 export const fallbacks = {
   audioFormat: ['audio/webm', 'audio/mp4', 'audio/wav'],
@@ -48,7 +52,8 @@ export const fallbacks = {
       environment: isGitHubPages ? 'github-pages' : 'development',
       basePath,
       siteUrl,
-      apiEndpoints
+      apiEndpoints,
+      authConfig
     });
   } catch (error) {
     console.error("Configuration initialization error:", error);
@@ -63,4 +68,9 @@ export function getAssetPath(type, filename) {
 // Helper function to get the full path for a page
 export function getPagePath(page) {
   return `${basePath}/${page}`;
+}
+
+// Helper function to get the full URL for a page
+export function getPageUrl(page) {
+  return `${siteUrl}${getPagePath(page)}`;
 }

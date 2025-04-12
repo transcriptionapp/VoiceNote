@@ -11,7 +11,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.5';
-import { siteUrl, getPagePath } from '../config.js';
+import { siteUrl, getPagePath, authConfig } from '../config.js';
 
 // Constants
 const STORAGE_KEY = 'sb-auth';
@@ -173,7 +173,16 @@ class AuthService {
    * @returns {string} The redirect URL
    */
   _getRedirectUrl() {
-    return `${siteUrl}${getPagePath('onboarding/welcome.html')}`;
+    return authConfig.redirectUrl;
+  }
+  
+  /**
+   * Get the sign in redirect URL
+   * @private
+   * @returns {string} The sign in redirect URL
+   */
+  _getSignInRedirectUrl() {
+    return authConfig.signInRedirectUrl;
   }
   
   /**
@@ -274,7 +283,11 @@ class AuthService {
       const { data, error } = await this.supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: this._getRedirectUrl()
+          redirectTo: this._getSignInRedirectUrl(),
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
         }
       });
       

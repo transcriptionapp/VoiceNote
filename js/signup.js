@@ -1,5 +1,6 @@
 import { supabase } from "./modules/auth.js";
 import { getBaseUrl } from "./utils.js";
+import { authConfig, getPagePath } from "./config.js";
 
 // Initialize UI elements
 const authBtn = document.getElementById("authBtn");
@@ -140,10 +141,11 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("✅ User profile ensured in 'user_profiles' table after OAuth login");
     }
 
-    // Redirect if not already doing so
-    if (!isRedirecting) {
-      isRedirecting = true;
-      await redirectBasedOnOnboarding(id);
+    // Check if user needs onboarding
+    if (!existingUser?.onboarded) {
+      window.location.href = getPagePath('onboarding/welcome.html');
+    } else {
+      window.location.href = getPagePath('recorder.html');
     }
   }
 });
@@ -345,7 +347,11 @@ googleBtn?.addEventListener("click", async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${getBaseUrl()}/auth/callback`
+        redirectTo: authConfig.signInRedirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
       }
     });
 
