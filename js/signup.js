@@ -384,10 +384,27 @@ googleBtn?.addEventListener("click", async () => {
   }
 
   try {
+    let redirectTo = authConfig.redirectUrl; // Default to onboarding
+    
+    // First check if user exists
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("onboarded, role, use_case, tools, language")
+        .eq("id", session.user.id)
+        .single();
+
+      // If user exists and has completed onboarding, use signInRedirectUrl
+      if (existingUser?.onboarded && existingUser.role && existingUser.use_case && existingUser.tools && existingUser.language) {
+        redirectTo = authConfig.signInRedirectUrl;
+      }
+    }
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: authConfig.signInRedirectUrl,
+        redirectTo,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent'
