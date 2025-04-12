@@ -9,6 +9,7 @@
  */
 
 import { supabase } from './auth.js';
+import { getPagePath } from '../config.js';
 
 // Onboarding steps in order
 const ONBOARDING_STEPS = {
@@ -54,15 +55,31 @@ class OnboardingManager {
    * Initialize the onboarding manager
    */
   async init() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      window.location.href = "/signup.html";
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      
+      if (!session?.user) {
+        console.log("No active session, redirecting to signup");
+        window.location.href = getPagePath('index.html');
+        return;
+      }
+
+      // Load user data and determine current step
+      const userData = await this.loadUserData();
+      if (!userData) {
+        console.log("No user data found, redirecting to signup");
+        window.location.href = getPagePath('index.html');
+        return;
+      }
+
+      this.determineCurrentStep();
+      return this;
+    } catch (error) {
+      console.error("Error in onboarding init:", error);
+      window.location.href = getPagePath('index.html');
       return;
     }
-
-    await this.loadUserData();
-    this.determineCurrentStep();
-    return this;
   }
 
   /**
@@ -131,15 +148,16 @@ class OnboardingManager {
     
     // If user is fully onboarded, redirect to app
     if (requiredStep === 'APP') {
-      window.location.href = '/recorder.html';
+      window.location.href = getPagePath('recorder.html');
       return true;
     }
     
     const requiredPath = ONBOARDING_STEPS[requiredStep].path;
+    const fullRequiredPath = getPagePath(requiredPath.substring(1)); // Remove leading slash
 
     // If user is on the wrong step, redirect them
     if (!currentPath.endsWith(requiredPath)) {
-      window.location.href = requiredPath;
+      window.location.href = fullRequiredPath;
       return true;
     }
 
@@ -180,7 +198,7 @@ class OnboardingManager {
     
     // If user is fully onboarded, redirect to app
     if (currentStep === 'APP') {
-      window.location.href = '/recorder.html';
+      window.location.href = getPagePath('recorder.html');
       return;
     }
     
@@ -188,11 +206,12 @@ class OnboardingManager {
 
     if (!nextStep) {
       // Onboarding complete, redirect to main app
-      window.location.href = '/recorder.html';
+      window.location.href = getPagePath('recorder.html');
       return;
     }
 
-    window.location.href = ONBOARDING_STEPS[nextStep].path;
+    const nextPath = ONBOARDING_STEPS[nextStep].path;
+    window.location.href = getPagePath(nextPath.substring(1)); // Remove leading slash
   }
 
   /**
