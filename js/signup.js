@@ -98,54 +98,94 @@ window.addEventListener('popstate', () => {
 
 // Listen for auth state changes
 supabase.auth.onAuthStateChange(async (event, session) => {
-  console.log("🔄 Auth state changed:", event);
+  console.log("🔄 Auth state changed:", event, { user: session?.user?.id });
   
   if (event === "SIGNED_IN" && session?.user) {
     const { id, email } = session.user;
 
-    // First check if the user already exists
-    const { data: existingUser, error: fetchError } = await supabase
-      .from("users")
-      .select("onboarded")
-      .eq("id", id)
-      .maybeSingle();
+    try {
+      // First check if the user already exists and their onboarding status
+      const { data: existingUser, error: fetchError } = await supabase
+        .from("users")
+        .select("onboarded, role, use_case, tools, language")
+        .eq("id", id)
+        .maybeSingle();
 
-    // Create/update user record
-    const { error } = await supabase
-      .from("users")
-      .upsert([{
-        id,
-        email,
-        subscription_status: 'active',
-        subscription_expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        credits_available: 3,
-        // Only set onboarded to false for new users
-        onboarded: existingUser ? existingUser.onboarded : false,
-        created_at: new Date().toISOString()
-      }], { onConflict: "id" });
+      if (fetchError) {
+        console.error("❌ Failed to fetch user data:", fetchError);
+        throw fetchError;
+      }
 
-    if (error) {
-      console.error("❌ Failed to insert user after OAuth login:", error.message);
-    } else {
-      console.log("✅ User ensured in 'users' table after OAuth login");
-    }
+      // For new users or users without complete data
+      if (!existingUser || !existingUser.onboarded) {
+        console.log("📝 Creating/updating user record for new or incomplete user");
+        
+        // Create/update user record with onboarded=false for new users
+        const { error: upsertError } = await supabase
+          .from("users")
+          .upsert([{
+            id,
+            email,
+            subscription_status: 'active',
+            subscription_expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            credits_available: 3,
+            onboarded: false, // Explicitly set to false for new users
+            created_at: new Date().toISOString(),
+            // Preserve existing fields if they exist
+            role: existingUser?.role,
+            use_case: existingUser?.use_case,
+            tools: existingUser?.tools,
+            language: existingUser?.language
+          }], { onConflict: "id" });
 
-    // Create/update user profile
-    const { error: profileError } = await supabase
-      .from("user_profiles")
-      .upsert([{ user_id: id, tier: "user", admin: false }], { onConflict: "user_id" });
+        if (upsertError) {
+          console.error("❌ Failed to create/update user:", upsertError);
+          throw upsertError;
+        }
 
-    if (profileError) {
-      console.error("❌ Failed to insert user profile after OAuth login:", profileError.message);
-    } else {
-      console.log("✅ User profile ensured in 'user_profiles' table after OAuth login");
-    }
+        // Create/update user profile
+        const { error: profileError } = await supabase
+          .from("user_profiles")
+          .upsert([{ 
+            user_id: id, 
+            tier: "user", 
+            admin: false 
+          }], { onConflict: "user_id" });
 
-    // Check if user needs onboarding
-    if (!existingUser?.onboarded) {
+        if (profileError) {
+          console.error("❌ Failed to create/update user profile:", profileError);
+          throw profileError;
+        }
+
+        console.log("✅ New user created, redirecting to onboarding");
+        window.location.href = getPagePath('onboarding/welcome.html');
+        return;
+      }
+
+      // For existing users who have completed onboarding
+      if (existingUser.onboarded) {
+        // Check if all required fields are filled
+        const hasAllFields = existingUser.role && 
+                           existingUser.use_case && 
+                           existingUser.tools && 
+                           existingUser.language;
+
+        if (hasAllFields) {
+          console.log("✅ Existing user with complete onboarding, redirecting to recorder");
+          window.location.href = getPagePath('recorder.html');
+          return;
+        } else {
+          console.log("⚠️ User marked as onboarded but missing fields, redirecting to onboarding");
+          window.location.href = getPagePath('onboarding/welcome.html');
+          return;
+        }
+      }
+
+    } catch (error) {
+      console.error("❌ Error during sign in processing:", error);
+      showToast("❌ Something went wrong. Please try again.", "error");
+      // On error, default to onboarding
       window.location.href = getPagePath('onboarding/welcome.html');
-    } else {
-      window.location.href = getPagePath('recorder.html');
     }
   }
 });
