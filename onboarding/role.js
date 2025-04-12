@@ -4,13 +4,17 @@ import { getPagePath } from '../js/config.js';
 
 // Initialize onboarding manager and check if we should be on this page
 (async () => {
-  await onboardingManager.init();
-  if (await onboardingManager.checkRedirect()) {
-    return;
+  try {
+    await onboardingManager.init();
+    if (await onboardingManager.checkRedirect()) {
+      return;
+    }
+    
+    // Highlight previously selected role if it exists
+    highlightSelectedRole();
+  } catch (error) {
+    console.error("Error initializing role page:", error);
   }
-  
-  // Highlight previously selected role if it exists
-  highlightSelectedRole();
 })();
 
 // Function to highlight the previously selected role
@@ -19,15 +23,13 @@ function highlightSelectedRole() {
   if (!userData || !userData.role) return;
   
   const selectedRole = userData.role;
-  const buttons = document.querySelectorAll('button[onclick^="selectRole"]');
+  const buttons = document.querySelectorAll('button[onclick^="selectRole"], .role-item');
   
   buttons.forEach(button => {
-    // Extract the role from the onclick attribute
-    const onclickAttr = button.getAttribute('onclick');
-    const roleMatch = onclickAttr.match(/selectRole\('(.+?)'\)/);
+    const role = button.getAttribute('data-role') || 
+                (button.getAttribute('onclick') || '').match(/selectRole\('(.+?)'\)/)?.[1];
     
-    if (roleMatch && roleMatch[1] === selectedRole) {
-      // Add a visual indicator that this option was previously selected
+    if (role === selectedRole) {
       button.classList.add('selected-option');
       button.classList.add('bg-blue-100');
       button.classList.add('border-blue-500');
@@ -42,7 +44,7 @@ window.addEventListener('pageshow', (event) => {
   }
 });
 
-window.selectRole = async function(role) {
+async function handleRoleSelection(role) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -51,7 +53,7 @@ window.selectRole = async function(role) {
     }
 
     // Show loading state
-    const buttons = document.querySelectorAll('button[onclick^="selectRole"]');
+    const buttons = document.querySelectorAll('button[onclick^="selectRole"], .role-item');
     buttons.forEach(btn => btn.disabled = true);
     
     // Add a loading indicator if it doesn't exist
@@ -62,14 +64,13 @@ window.selectRole = async function(role) {
       loadingIndicator.className = 'mt-4 text-center';
       loadingIndicator.innerHTML = '<div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>';
       document.querySelector('.max-w-xl').appendChild(loadingIndicator);
-    } else {
-      loadingIndicator.style.display = 'block';
     }
+    loadingIndicator.style.display = 'block';
 
     // Update the role in Supabase
     const { error } = await supabase
       .from("users")
-      .update({ role: role })
+      .update({ role })
       .eq("id", user.id);
 
     if (error) {
@@ -80,56 +81,45 @@ window.selectRole = async function(role) {
     // Reload user data in onboarding manager
     await onboardingManager.loadUserData();
     
-    // Move to the next step
+    // Move to the next step using onboarding manager
     await onboardingManager.nextStep();
   } catch (error) {
     console.error("Error updating role:", error);
     alert("Something went wrong. Please try again.");
   } finally {
     // Reset UI state
-    const buttons = document.querySelectorAll('button[onclick^="selectRole"]');
+    const buttons = document.querySelectorAll('button[onclick^="selectRole"], .role-item');
     buttons.forEach(btn => btn.disabled = false);
     const loadingIndicator = document.getElementById('loadingIndicator');
     if (loadingIndicator) {
       loadingIndicator.style.display = 'none';
     }
   }
-};
+}
 
+// Global handler for onclick attributes
+window.selectRole = (role) => handleRoleSelection(role);
+
+// Setup event listeners
 document.addEventListener('DOMContentLoaded', () => {
   // Force type="button" on all buttons to prevent form submit issues on iOS Safari
   document.querySelectorAll("button").forEach(btn => {
     btn.setAttribute("type", "button");
   });
 
-  const roleItems = document.querySelectorAll('.role-item');
-
-  roleItems.forEach((item) => {
+  // Setup click handlers for role-item elements
+  document.querySelectorAll('.role-item').forEach((item) => {
     const role = item.getAttribute('data-role');
+    if (!role) return;
 
-    const handler = async (event) => {
-      event.preventDefault(); // prevent double-triggers
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user;
-      if (!user) return window.location.href = '../index.html';
-
-      const { error } = await supabase
-        .from('users')
-        .update({ role })
-        .eq('id', user.id);
-
-      if (error) {
-        console.error('Failed to update role:', error);
-        alert('Something went wrong saving your role.');
-      } else {
-        window.location.href = './use_case.html';
-      }
-    };
-
-    // Avoid duplicate handlers
-    item.removeEventListener('click', handler);
-    item.removeEventListener('touchstart', handler);
-    item.addEventListener('click', handler);
-    item.addEventListener('touchstart', handler);
+    // Remove any existing listeners
+    const newItem = item.cloneNode(true);
+    item.parentNode.replaceChild(newItem, item);
+    
+    // Add new click handler
+    newItem.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleRoleSelection(role);
+    });
   });
 });

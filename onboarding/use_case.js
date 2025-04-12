@@ -1,15 +1,20 @@
 import { supabase } from '../js/modules/auth.js';
 import { onboardingManager } from '../js/modules/onboardingManager.js';
+import { getPagePath } from '../js/config.js';
 
 // Initialize onboarding manager and check if we should be on this page
 (async () => {
-  await onboardingManager.init();
-  if (await onboardingManager.checkRedirect()) {
-    return;
+  try {
+    await onboardingManager.init();
+    if (await onboardingManager.checkRedirect()) {
+      return;
+    }
+    
+    // Highlight previously selected use case if it exists
+    highlightSelectedUseCase();
+  } catch (error) {
+    console.error("Error initializing use case page:", error);
   }
-  
-  // Highlight previously selected use case if it exists
-  highlightSelectedUseCase();
 })();
 
 // Function to highlight the previously selected use case
@@ -35,26 +40,28 @@ function highlightSelectedUseCase() {
 }
 
 window.selectUseCase = async function(useCase) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return (window.location.href = "../signup.html");
-
-  // Show loading state
-  const buttons = document.querySelectorAll('button[onclick^="selectUseCase"]');
-  buttons.forEach(btn => btn.disabled = true);
-  
-  // Add a loading indicator if it doesn't exist
-  let loadingIndicator = document.getElementById('loadingIndicator');
-  if (!loadingIndicator) {
-    loadingIndicator = document.createElement('div');
-    loadingIndicator.id = 'loadingIndicator';
-    loadingIndicator.className = 'mt-4 text-center';
-    loadingIndicator.innerHTML = '<div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>';
-    document.querySelector('.max-w-xl').appendChild(loadingIndicator);
-  } else {
-    loadingIndicator.style.display = 'block';
-  }
-
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.href = getPagePath('index.html');
+      return;
+    }
+
+    // Show loading state
+    const buttons = document.querySelectorAll('button[onclick^="selectUseCase"]');
+    buttons.forEach(btn => btn.disabled = true);
+    
+    // Add a loading indicator if it doesn't exist
+    let loadingIndicator = document.getElementById('loadingIndicator');
+    if (!loadingIndicator) {
+      loadingIndicator = document.createElement('div');
+      loadingIndicator.id = 'loadingIndicator';
+      loadingIndicator.className = 'mt-4 text-center';
+      loadingIndicator.innerHTML = '<div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>';
+      document.querySelector('.max-w-xl').appendChild(loadingIndicator);
+    }
+    loadingIndicator.style.display = 'block';
+
     // Update the use case in Supabase
     const { error } = await supabase
       .from("users")
@@ -63,9 +70,11 @@ window.selectUseCase = async function(useCase) {
 
     if (error) {
       console.error("❌ Failed to update use case:", error);
-      alert("Something went wrong saving your input.");
-      return;
+      throw error;
     }
+    
+    // Reload user data in onboarding manager
+    await onboardingManager.loadUserData();
     
     // Move to the next step
     await onboardingManager.nextStep();
@@ -74,7 +83,9 @@ window.selectUseCase = async function(useCase) {
     alert("Something went wrong. Please try again.");
   } finally {
     // Reset UI state
+    const buttons = document.querySelectorAll('button[onclick^="selectUseCase"]');
     buttons.forEach(btn => btn.disabled = false);
+    const loadingIndicator = document.getElementById('loadingIndicator');
     if (loadingIndicator) {
       loadingIndicator.style.display = 'none';
     }
